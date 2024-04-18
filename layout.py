@@ -1,3 +1,5 @@
+from fractions import Fraction
+
 from PIL import ImageTk, Image
 import tkinter as tk
 from tkinter import ttk
@@ -33,7 +35,7 @@ class App(customtkinter.CTk):
 
         button_info = [("importar.png", "Importar", self.toolbar_button_click),
                        ("exportar.png", "Exportar", self.toolbar_button_click),
-                       ("resolver.png", "Resolver", self.toolbar_button_click),
+                       ("resolver.png", "Resolver", self.gauss_jordan),
                        ("inversa.png", "Inversa", self.toolbar_button_click),
                        ("limpiar.png", "Limpiar", self.toolbar_button_click),
                        ("Cambiar.png", "Cambiar tamaño", self.matrix_size),]
@@ -62,8 +64,8 @@ class App(customtkinter.CTk):
                                             font=customtkinter.CTkFont(size=20, weight="bold"))
         text_label.grid(row=0, column=0, padx=20, pady=(10, 10))
 
-        buttons_info = [("Gauss-Jordan", self.Gauss_Jordan), ("Determinantes", self.Determinantes),
-                        ("Suma", self.Suma), ("Multiplicacion", self.Multiplicacion()),
+        buttons_info = [("Gauss-Jordan", self.gauss_jordan), ("Determinantes", self.Determinantes),
+                        ("Suma", self.Suma), ("Multiplicacion", self.Multiplicacion),
                         ("Configuración", self.Configuracion)]
 
         for i, (text, command) in enumerate(buttons_info, start=1):
@@ -85,12 +87,15 @@ class App(customtkinter.CTk):
 
     def configure_mainContent(self):
         self.mainEntry_frame = customtkinter.CTkFrame(self)
-        self.mainEntry_frame.grid(row=1, column=1, rowspan=3,padx=(20, 0), pady=(20, 0), sticky="nsew")
-        self.mainEntry_frame.grid_columnconfigure(0, weight=1)
+        self.mainEntry_frame.grid(row=1, column=1, rowspan=3, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        # Configura todos los espacios de columnas para una expansión uniforme
+        for i in range(10):  # Asume un número máximo de columnas, ajusta según sea necesario
+            self.mainEntry_frame.grid_columnconfigure(i, weight=1)
 
         self.mainResults_frame = customtkinter.CTkFrame(self)
-        self.mainResults_frame.grid(row=1, column=2, rowspan=2,padx=(20,20),pady=(20,0), sticky="nsew")
-        self.mainResults_frame.grid_columnconfigure(0, weight=1)
+        self.mainResults_frame.grid(row=1, column=2, rowspan=2, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        for i in range(10):
+            self.mainResults_frame.grid_columnconfigure(i, weight=1)
 
         self.mainSolution_frame = customtkinter.CTkFrame(self)
         self.mainSolution_frame.grid(row=3, column=2, padx=(20, 20), pady=(20, 0), sticky="nsew")
@@ -102,8 +107,115 @@ class App(customtkinter.CTk):
         self.bottomBar_frame_button_1 = customtkinter.CTkButton(master=self, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.bottomBar_frame_button_1.grid(row=4, column=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
-    def Gauss_Jordan(self):
-        print("Gauss-Jordan")
+    def create_matrix_entries(self, rows, columns):
+        for widget in self.mainEntry_frame.winfo_children():
+            widget.destroy()
+
+        total_width = columns * (self.cell_size + self.cell_padding)
+        total_height = rows * (self.cell_size + self.cell_padding)
+
+        start_x = max(0, (self.mainEntry_frame.winfo_width() - total_width) // 2)
+        start_y = max(0, (self.mainEntry_frame.winfo_height() - total_height) // 2)
+
+        self.matrix_entries = []
+        for i in range(rows):
+            row_entries = []
+            for j in range(columns):
+                entry = customtkinter.CTkEntry(self.mainEntry_frame, width=60, height=60, corner_radius=5)
+                entry.grid(row=i, column=j, padx=10, pady=10, sticky="nsew")
+                self.mainEntry_frame.grid_rowconfigure(i, weight=1)
+                self.mainEntry_frame.grid_columnconfigure(j, weight=1)
+
+                entry.place(x=start_x + j * (self.cell_size + self.cell_padding),
+                            y=start_y + i * (self.cell_size + self.cell_padding))
+                row_entries.append(entry)
+            self.matrix_entries.append(row_entries)
+
+        self.mainEntry_frame.bind("<Configure>", lambda e: self.update_matrix_layout(rows, columns))
+
+    def update_matrix_layout(self, rows, columns):
+        total_width = columns * (self.cell_size + self.cell_padding)
+        total_height = rows * (self.cell_size + self.cell_padding)
+
+        start_x = max(0, (self.mainEntry_frame.winfo_width() - total_width) // 2)
+        start_y = max(0, (self.mainEntry_frame.winfo_height() - total_height) // 2)
+
+        for i in range(len(self.matrix_entries)):
+            for j in range(len(self.matrix_entries[i])):
+                entry = self.matrix_entries[i][j]
+                entry.place(x=start_x + j * (self.cell_size + self.cell_padding),
+                            y=start_y + i * (self.cell_size + self.cell_padding))
+
+    def gauss_jordan(self):
+        rows = len(self.matrix_entries)
+        columns = len(self.matrix_entries[0])
+
+        matrix = []
+        for row_entries in self.matrix_entries:
+            row = []
+            for entry in row_entries:
+                entry_value = entry.get()
+                if entry_value:
+                    row.append(Fraction(entry_value))
+                else:
+                    row.append(Fraction(0))
+            matrix.append(row)
+
+        for i in range(min(rows, columns)):
+            if matrix[i][i] == 0:
+                for k in range(i + 1, rows):
+                    if matrix[k][i] != 0:
+                        matrix[i], matrix[k] = matrix[k], matrix[i]
+                        break
+
+            pivot = matrix[i][i]
+            if pivot == 0:
+                continue
+
+            for k in range(columns):
+                matrix[i][k] /= pivot
+
+
+            for j in range(rows):
+                if j != i:
+                    factor = matrix[j][i]
+                    for k in range(columns):
+                        matrix[j][k] -= factor * matrix[i][k]
+
+
+        self.display_result_matrix(matrix)
+        self.display_solution(matrix)
+
+    def display_result_matrix(self, matrix):
+        for widget in self.mainResults_frame.winfo_children():
+            widget.destroy()
+
+        self.mainResults_frame.grid_columnconfigure(0, weight=1)
+        for i in range(len(matrix)):
+            self.mainResults_frame.grid_rowconfigure(i, weight=1)
+            for j in range(len(matrix[i])):
+                self.mainResults_frame.grid_columnconfigure(j, weight=1)
+                value = matrix[i][j]
+                label = customtkinter.CTkLabel(self.mainResults_frame, text=str(value), width=100, height=40,
+                                               corner_radius=0)
+                label.grid(row=i, column=j, padx=(1, 1), pady=(1, 1), sticky="nsew")
+
+    def display_solution(self, matrix):
+        for widget in self.mainSolution_frame.winfo_children():
+            widget.destroy()
+
+        solution_texts = []
+        for i, row in enumerate(matrix):
+            if row[i] != 0:
+                solution_texts.append(f"x{i + 1} = {row[-1]}")
+            else:
+                if row[-1] != 0:
+                    solution_texts.append("No hay solución.")
+                    break
+
+        solution_text = "\n".join(solution_texts)
+        label = customtkinter.CTkLabel(self.mainSolution_frame, text=solution_text, width=300, height=200)
+        label.grid(row=0, column=0, padx=20, pady=20)
 
     def Determinantes(self):
         print("Determinantes")
@@ -158,8 +270,7 @@ class App(customtkinter.CTk):
         self.accept_button = customtkinter.CTkButton(self.matrix_window, text="Aceptar", command=self.accept_size)
         self.accept_button.pack(side='right', padx=10, pady=10)
 
-        # Asegúrese de que el canvas esté actualizado antes de dibujar
-        self.canvas.update()  # Actualizar el canvas para obtener el tamaño correcto antes de dibujar
+        self.canvas.update()
         self.draw_matrix()
         self.canvas.bind("<B1-Motion>", self.resize_matrix)
 
@@ -210,7 +321,9 @@ class App(customtkinter.CTk):
             self.draw_matrix()
 
     def accept_size(self):
-        print(f"Size accepted: {self.rows} rows, {self.columns} columns")
+        rows = int(self.row_box.get())
+        columns = int(self.col_box.get())
+        self.create_matrix_entries(rows, columns)
         self.matrix_window.destroy()
 
     def update_rows_columns(self, event=None):
@@ -226,7 +339,6 @@ class App(customtkinter.CTk):
 
     def run(self):
         self.mainloop()
-
 
 if __name__ == "__main__":
     app = App()
