@@ -324,7 +324,7 @@ GaussJordan.geometry("1280x720")  # Establece las dimensiones de la ventana
 GaussJordan.configure(bg="#dddddd")  # Configura el color de fondo de la ventana
 
 # Carga y establece el icono de la ventana
-icono = Image.open(os.path.join("images", "LogoGJ_Mesa de trabajo 1.png"))
+icono = Image.open(os.path.join("images", "logogj_mesa_de_trabajo.png"))
 icono_tk = ImageTk.PhotoImage(icono)
 GaussJordan.iconphoto(True, icono_tk)
 
