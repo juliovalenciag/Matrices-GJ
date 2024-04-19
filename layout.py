@@ -182,8 +182,12 @@ class App(customtkinter.CTk):
 
         total_width = columns * (entry_width + 10)
         total_height = rows * (entry_height + 10)
+
         start_x = (self.mainResults_frame.winfo_width() - total_width) // 2
         start_y = (self.mainResults_frame.winfo_height() - total_height) // 2
+
+        start_x = max(start_x, 10)
+        start_y = max(start_y, 10)
 
         for i in range(rows):
             self.mainResults_frame.grid_rowconfigure(i, weight=1, uniform='row')
@@ -204,19 +208,17 @@ class App(customtkinter.CTk):
         columns = len(matrix[0])
         solution_texts = []
 
-        # Determinar la rango de la matriz para identificar el número de soluciones
         rank = sum(1 for i in range(rows) if any(matrix[i][j] != 0 for j in range(columns - 1)))
         if rank < rows:
             solution_texts.append("El sistema tiene infinitas soluciones debido a las filas cero.")
 
-        # Interpretar cada fila de la matriz
         for i in range(rows):
             if all(matrix[i][j] == 0 for j in range(columns - 1)):
                 if matrix[i][-1] != 0:
                     solution_texts = ["Sistema inconsistente. No hay solución."]
                     break
                 else:
-                    continue  # fila cero, contribuye a infinitas soluciones
+                    continue
             else:
                 terms = []
                 for j in range(columns - 1):
@@ -228,7 +230,7 @@ class App(customtkinter.CTk):
                 solution_texts.append(equation)
 
         solution_text = "\n".join(solution_texts)
-        if not solution_texts:  # Caso cuando todas las filas son cero
+        if not solution_texts:
             solution_text = "El sistema tiene infinitas soluciones (sistema indeterminado)."
 
         label = customtkinter.CTkLabel(self.mainSolution_frame, text=solution_text, anchor="w", justify=tk.LEFT)
