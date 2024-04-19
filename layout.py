@@ -10,16 +10,14 @@ import os
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("dark-blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
-
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
-        # configure window
         self.title("Gauss-Jordan")
         self.geometry(f"{1280}x{720}")
+        self.inverse_tab_created = False
 
-        # configure grid layout (4x4)
         self.grid_columnconfigure(0, weight=0)
         self.grid_rowconfigure(0, weight=0)
         self.grid_columnconfigure((1, 2), weight=1)
@@ -36,8 +34,8 @@ class App(customtkinter.CTk):
         button_info = [("importar.png", "Importar", self.toolbar_button_click),
                        ("exportar.png", "Exportar", self.toolbar_button_click),
                        ("resolver.png", "Resolver", self.gauss_jordan),
-                       ("inversa.png", "Inversa", self.toolbar_button_click),
-                       ("limpiar.png", "Limpiar", self.toolbar_button_click),
+                       ("inversa.png", "Inversa", self.calculate_inverse),
+                       ("limpiar.png", "Reiniciar", self.clear_all),
                        ("Cambiar.png", "Cambiar tamaño", self.matrix_size),]
 
         for i, (img_name, text, cmd) in enumerate(button_info):
@@ -51,9 +49,6 @@ class App(customtkinter.CTk):
                 button.grid(row=0, column=i, padx=10, pady=10)
             except FileNotFoundError:
                 print(f"Error: El archivo {img_name} no se encontró en la carpeta 'images'.")
-
-    def toolbar_button_click(self):
-        print("Toolbar button clicked")
 
     def configure_sidebar(self):
         sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
@@ -88,22 +83,17 @@ class App(customtkinter.CTk):
     def configure_mainContent(self):
         self.mainEntry_frame = customtkinter.CTkFrame(self)
         self.mainEntry_frame.grid(row=1, column=1, rowspan=3, padx=(20, 0), pady=(20, 0), sticky="nsew")
-        # Configura todos los espacios de columnas para una expansión uniforme
-        for i in range(10):  # Asume un número máximo de columnas, ajusta según sea necesario
-            self.mainEntry_frame.grid_columnconfigure(i, weight=1)
 
         self.mainResults_frame = customtkinter.CTkFrame(self)
-        self.mainResults_frame.grid(row=1, column=2, rowspan=2, padx=(20, 20), pady=(20, 0), sticky="nsew")
-        for i in range(10):
-            self.mainResults_frame.grid_columnconfigure(i, weight=1)
+        self.mainResults_frame.grid(row=1, column=2, rowspan=2, padx=(20,20), pady=(20,0), sticky="nsew")
 
         self.mainSolution_frame = customtkinter.CTkFrame(self)
         self.mainSolution_frame.grid(row=3, column=2, padx=(20, 20), pady=(20, 0), sticky="nsew")
         self.mainSolution_frame.grid_columnconfigure(0, weight=1)
 
-        # Barra inferior
-        self.bottomBar_frame = customtkinter.CTkEntry(self, placeholder_text="Texto de prueba")
-        self.bottomBar_frame.grid(row=4, column=1, padx=(20, 0), pady=(20, 20), sticky="nsew")
+        self.clear_content_button = customtkinter.CTkButton(self, text="Limpiar contenido",fg_color="transparent",border_width=1, text_color=("gray10", "#DCE4EE"),command=self.clear_matrix_content)
+        self.clear_content_button.grid(row=4, column=1, padx=(20, 0), pady=(20, 20), sticky="nsew")
+
         self.bottomBar_frame_button_1 = customtkinter.CTkButton(master=self, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
         self.bottomBar_frame_button_1.grid(row=4, column=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
@@ -111,40 +101,35 @@ class App(customtkinter.CTk):
         for widget in self.mainEntry_frame.winfo_children():
             widget.destroy()
 
-        total_width = columns * (self.cell_size + self.cell_padding)
-        total_height = rows * (self.cell_size + self.cell_padding)
-
-        start_x = max(0, (self.mainEntry_frame.winfo_width() - total_width) // 2)
-        start_y = max(0, (self.mainEntry_frame.winfo_height() - total_height) // 2)
-
         self.matrix_entries = []
+
+        entry_width = 60
+        entry_height = 60
+        padding = 5
+        constant_term_column = columns - 1
+
+        if customtkinter.get_appearance_mode() == "Dark":
+            bg_color_default = "#2C2F33"
+            bg_color_constant = "#60656b"
+        else:
+            bg_color_default = "white"
+            bg_color_constant = "lightgrey"
+
+        total_width = columns * (entry_width + padding)
+        total_height = rows * (entry_height + padding)
+
+        start_x = (self.mainEntry_frame.winfo_width() - total_width) // 2
+        start_y = (self.mainEntry_frame.winfo_height() - total_height) // 2
+
         for i in range(rows):
             row_entries = []
             for j in range(columns):
-                entry = customtkinter.CTkEntry(self.mainEntry_frame, width=60, height=60, corner_radius=5)
-                entry.grid(row=i, column=j, padx=10, pady=10, sticky="nsew")
-                self.mainEntry_frame.grid_rowconfigure(i, weight=1)
-                self.mainEntry_frame.grid_columnconfigure(j, weight=1)
-
-                entry.place(x=start_x + j * (self.cell_size + self.cell_padding),
-                            y=start_y + i * (self.cell_size + self.cell_padding))
+                bg_color = bg_color_constant if j == constant_term_column else bg_color_default
+                entry = customtkinter.CTkEntry(self.mainEntry_frame, width=entry_width, height=entry_height,
+                                               corner_radius=5, fg_color=bg_color)
+                entry.place(x=start_x + j * (entry_width + padding), y=start_y + i * (entry_height + padding))
                 row_entries.append(entry)
             self.matrix_entries.append(row_entries)
-
-        self.mainEntry_frame.bind("<Configure>", lambda e: self.update_matrix_layout(rows, columns))
-
-    def update_matrix_layout(self, rows, columns):
-        total_width = columns * (self.cell_size + self.cell_padding)
-        total_height = rows * (self.cell_size + self.cell_padding)
-
-        start_x = max(0, (self.mainEntry_frame.winfo_width() - total_width) // 2)
-        start_y = max(0, (self.mainEntry_frame.winfo_height() - total_height) // 2)
-
-        for i in range(len(self.matrix_entries)):
-            for j in range(len(self.matrix_entries[i])):
-                entry = self.matrix_entries[i][j]
-                entry.place(x=start_x + j * (self.cell_size + self.cell_padding),
-                            y=start_y + i * (self.cell_size + self.cell_padding))
 
     def gauss_jordan(self):
         rows = len(self.matrix_entries)
@@ -175,13 +160,11 @@ class App(customtkinter.CTk):
             for k in range(columns):
                 matrix[i][k] /= pivot
 
-
             for j in range(rows):
                 if j != i:
                     factor = matrix[j][i]
                     for k in range(columns):
                         matrix[j][k] -= factor * matrix[i][k]
-
 
         self.display_result_matrix(matrix)
         self.display_solution(matrix)
@@ -190,51 +173,124 @@ class App(customtkinter.CTk):
         for widget in self.mainResults_frame.winfo_children():
             widget.destroy()
 
-        self.mainResults_frame.grid_columnconfigure(0, weight=1)
-        for i in range(len(matrix)):
-            self.mainResults_frame.grid_rowconfigure(i, weight=1)
-            for j in range(len(matrix[i])):
-                self.mainResults_frame.grid_columnconfigure(j, weight=1)
+        rows = len(matrix)
+        columns = max(len(row) for row in matrix) if matrix else 0
+        entry_width = 75
+        entry_height = 50
+
+        bg_color = "#2C2F33" if customtkinter.get_appearance_mode() == "Dark" else "white"
+
+        total_width = columns * (entry_width + 10)
+        total_height = rows * (entry_height + 10)
+        start_x = (self.mainResults_frame.winfo_width() - total_width) // 2
+        start_y = (self.mainResults_frame.winfo_height() - total_height) // 2
+
+        for i in range(rows):
+            self.mainResults_frame.grid_rowconfigure(i, weight=1, uniform='row')
+            for j in range(columns):
+                self.mainResults_frame.grid_columnconfigure(j, weight=1, uniform='col')
                 value = matrix[i][j]
-                label = customtkinter.CTkLabel(self.mainResults_frame, text=str(value), width=100, height=40,
-                                               corner_radius=0)
-                label.grid(row=i, column=j, padx=(1, 1), pady=(1, 1), sticky="nsew")
+                label = customtkinter.CTkLabel(self.mainResults_frame, text=str(value),
+                                               width=entry_width, height=entry_height,
+                                               corner_radius=5, fg_color=bg_color, anchor='center')
+                label.grid(row=i, column=j, padx=(5, 5), pady=(5, 5), sticky="nsew")
+                label.place(x=start_x + j * (entry_width + 10), y=start_y + i * (entry_height + 10))
 
     def display_solution(self, matrix):
         for widget in self.mainSolution_frame.winfo_children():
             widget.destroy()
 
+        rows = len(matrix)
+        columns = len(matrix[0])
         solution_texts = []
-        for i, row in enumerate(matrix):
-            if row[i] != 0:
-                solution_texts.append(f"x{i + 1} = {row[-1]}")
-            else:
-                if row[-1] != 0:
-                    solution_texts.append("No hay solución.")
+
+        # Determinar la rango de la matriz para identificar el número de soluciones
+        rank = sum(1 for i in range(rows) if any(matrix[i][j] != 0 for j in range(columns - 1)))
+        if rank < rows:
+            solution_texts.append("El sistema tiene infinitas soluciones debido a las filas cero.")
+
+        # Interpretar cada fila de la matriz
+        for i in range(rows):
+            if all(matrix[i][j] == 0 for j in range(columns - 1)):
+                if matrix[i][-1] != 0:
+                    solution_texts = ["Sistema inconsistente. No hay solución."]
                     break
+                else:
+                    continue  # fila cero, contribuye a infinitas soluciones
+            else:
+                terms = []
+                for j in range(columns - 1):
+                    if matrix[i][j] != 0:
+                        coefficient = f"{matrix[i][j]:.2f}" if isinstance(matrix[i][j], float) else str(matrix[i][j])
+                        terms.append(f"{coefficient}x_{j + 1}")
+                constant = matrix[i][-1]
+                equation = " + ".join(terms) + f" = {constant}"
+                solution_texts.append(equation)
 
         solution_text = "\n".join(solution_texts)
-        label = customtkinter.CTkLabel(self.mainSolution_frame, text=solution_text, width=300, height=200)
-        label.grid(row=0, column=0, padx=20, pady=20)
+        if not solution_texts:  # Caso cuando todas las filas son cero
+            solution_text = "El sistema tiene infinitas soluciones (sistema indeterminado)."
+
+        label = customtkinter.CTkLabel(self.mainSolution_frame, text=solution_text, anchor="w", justify=tk.LEFT)
+        label.grid(sticky="nsew", padx=20, pady=20)
+    def calculate_inverse(self):
+        # Obtener las dimensiones de la matriz de la GUI, excluyendo la columna de términos constantes
+        rows = len(self.matrix_entries)
+        columns = len(self.matrix_entries[0]) - 1  # Excluir la última columna (términos constantes)
+
+        if rows != columns:
+            tkinter.messagebox.showerror("Error",
+                                         "La matriz debe ser cuadrada (sin contar la columna de términos constantes) para calcular la inversa.")
+            return
+
+        # Crear la matriz aumentada sin incluir la columna de términos constantes
+        matrix = []
+        for i, row_entries in enumerate(self.matrix_entries):
+            row = [Fraction(entry.get() if entry.get() else 0) for entry in
+                   row_entries[:-1]]  # Excluir el último elemento de cada fila
+            identity = [Fraction(int(i == j)) for j in range(rows)]
+            matrix.append(row + identity)
+
+        # Aplicar el método Gauss-Jordan para obtener la inversa
+        n = rows
+        for i in range(n):
+            if matrix[i][i] == 0:  # Buscar un pivote no nulo
+                for j in range(i + 1, n):
+                    if matrix[j][i] != 0:
+                        matrix[i], matrix[j] = matrix[j], matrix[i]
+                        break
+                else:
+                    tkinter.messagebox.showerror("Error", "La matriz es singular y no tiene inversa.")
+                    return
+
+            # Normalizar la fila del pivote
+            pivot = matrix[i][i]
+            matrix[i] = [x / pivot for x in matrix[i]]
+
+            # Eliminar todos los otros elementos en la columna actual
+            for j in range(n):
+                if i != j:
+                    factor = matrix[j][i]
+                    matrix[j] = [matrix[j][k] - factor * matrix[i][k] for k in range(2 * n)]
+
+        # Extraer la matriz inversa de la parte derecha de la matriz aumentada
+        inverse_matrix = [row[n:] for row in matrix]
+
+        # Mostrar solo la matriz inversa
+        self.display_result_matrix(inverse_matrix)
 
     def Determinantes(self):
         print("Determinantes")
-
     def Suma(self):
         print("Suma")
-
     def Multiplicacion(self):
         print("Multiplicacion")
-
     def Configuracion(self):
         print("Configuracion")
-
     def sidebar_button_event(self):
         print("Sidebar button clicked")
-
     def toolbar_button_click(self):
         print("Toolbar button clicked")
-
     def create_rounded_rectangle(self, x1, y1, x2, y2, radius=25, **kwargs):
         points = [x1+radius, y1,
                   x1+radius, y1, x2-radius, y1, x2-radius, y1, x2, y1,
@@ -287,7 +343,6 @@ class App(customtkinter.CTk):
                 y2 = y1 + self.cell_size
                 self.create_rounded_rectangle(x1, y1, x2, y2, radius=10, outline="black", fill="lightgrey")
 
-        # Dibujar corchetes alrededor de la matriz
         bracket_width = 20
         self.canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width,
                                 start_y + self.rows * (self.cell_size + self.cell_padding), width=2)
@@ -295,7 +350,6 @@ class App(customtkinter.CTk):
                                 start_x + self.columns * (self.cell_size + self.cell_padding) + bracket_width,
                                 start_y + self.rows * (self.cell_size + self.cell_padding), width=2)
 
-        # Dibujar el controlador de tamaño
         self.canvas.create_rectangle(
             start_x + self.columns * (self.cell_size + self.cell_padding) - self.cell_padding,
             start_y + self.rows * (self.cell_size + self.cell_padding) - self.cell_padding,
@@ -326,10 +380,32 @@ class App(customtkinter.CTk):
         self.create_matrix_entries(rows, columns)
         self.matrix_window.destroy()
 
+    def clear_all(self):
+        for widget in self.mainEntry_frame.winfo_children():
+            widget.destroy()
+
+        for widget in self.mainResults_frame.winfo_children():
+            widget.destroy()
+
+        for widget in self.mainSolution_frame.winfo_children():
+            widget.destroy()
+
+    def clear_matrix_content(self):
+        for row_entries in self.matrix_entries:
+            for entry in row_entries:
+                entry.delete(0, tk.END)
+
+        for widget in self.mainResults_frame.winfo_children():
+            widget.destroy()
+
+        for widget in self.mainSolution_frame.winfo_children():
+            widget.destroy()
+
     def update_rows_columns(self, event=None):
         self.rows = int(self.row_box.get())
         self.columns = int(self.col_box.get())
         self.draw_matrix()
+        self.create_matrix_entries(self.rows, self.columns)
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
