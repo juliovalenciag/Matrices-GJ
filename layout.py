@@ -5,7 +5,7 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox
 import customtkinter
-from tkinterdnd2 import 
+from tkinterdnd2 import TkinterDnD, DND_ALL
 import os
 
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
