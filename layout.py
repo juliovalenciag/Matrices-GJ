@@ -2,17 +2,20 @@ from fractions import Fraction
 
 from PIL import ImageTk, Image
 import tkinter as tk
-from tkinter import ttk
+from tkinter import image_names, ttk
 import tkinter.messagebox
 import customtkinter
-from tkinterdnd2 import TkinterDnD, DND_ALL
+from numpy import pad
 import os
 
-customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
-customtkinter.set_default_color_theme("dark-blue")  # Themes: "blue" (standard), "green", "dark-blue"
+# Modes: "System" (standard), "Dark", "Light"
+customtkinter.set_appearance_mode("Dark")
+# Themes: "blue" (standard), "green", "dark-blue"
+customtkinter.set_default_color_theme("dark-blue")
+
 
 class App(customtkinter.CTk):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super().__init__()
 
         self.title("Gauss-Jordan")
@@ -27,10 +30,11 @@ class App(customtkinter.CTk):
         self.configure_topbar()
         self.configure_sidebar()
         self.configure_mainContent()
-        self.
+        
 
     def configure_topbar(self):
-        topbar_frame = customtkinter.CTkFrame(self, height=100, corner_radius=0)
+        topbar_frame = customtkinter.CTkFrame(
+            self, height=100, corner_radius=0)
         topbar_frame.grid(row=0, column=1, columnspan=3, sticky="nsew")
 
         button_info = [("importar.png", "Importar", self.import_document),
@@ -38,7 +42,7 @@ class App(customtkinter.CTk):
                        ("resolver.png", "Resolver", self.gauss_jordan),
                        ("inversa.png", "Inversa", self.calculate_inverse),
                        ("limpiar.png", "Reiniciar", self.clear_all),
-                       ("Cambiar.png", "Cambiar tamaño", self.matrix_size),]
+                       ("cambiar.png", "Cambiar tamaño", self.matrix_size),]
 
         for i, (img_name, text, cmd) in enumerate(button_info):
             try:
@@ -50,10 +54,12 @@ class App(customtkinter.CTk):
                 button.image = tk_image
                 button.grid(row=0, column=i, padx=10, pady=10)
             except FileNotFoundError:
-                print(f"Error: El archivo {img_name} no se encontró en la carpeta 'images'.")
+                print(
+                    f"Error: El archivo {img_name} no se encontró en la carpeta 'images'.")
 
     def configure_sidebar(self):
-        sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
+        sidebar_frame = customtkinter.CTkFrame(
+            self, width=140, corner_radius=0)
         sidebar_frame.grid(row=0, column=0, rowspan=6, sticky="nsew")
         sidebar_frame.grid_rowconfigure(6, weight=1)
 
@@ -66,38 +72,51 @@ class App(customtkinter.CTk):
                         ("Configuración", self.Configuracion)]
 
         for i, (text, command) in enumerate(buttons_info, start=1):
-            button = customtkinter.CTkButton(sidebar_frame, text=text, command=command)
+            button = customtkinter.CTkButton(
+                sidebar_frame, text=text, command=command)
             button.grid(row=i, column=0, padx=20, pady=10)
 
-        appearance_mode_label = customtkinter.CTkLabel(sidebar_frame, text="Appearance Mode:", anchor="w")
+        appearance_mode_label = customtkinter.CTkLabel(
+            sidebar_frame, text="Appearance Mode:", anchor="w")
         appearance_mode_label.grid(row=7, column=0, padx=20, pady=(10, 0))
-        appearance_mode_optionemenu = customtkinter.CTkOptionMenu(sidebar_frame, values=["Light", "Dark", "System"], command=self.change_appearance_mode_event)
-        appearance_mode_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 10))
-        scaling_label = customtkinter.CTkLabel(sidebar_frame, text="UI Scaling:", anchor="w")
+        appearance_mode_optionemenu = customtkinter.CTkOptionMenu(sidebar_frame, values=[
+                                                                  "Light", "Dark", "System"], command=self.change_appearance_mode_event)
+        appearance_mode_optionemenu.grid(
+            row=8, column=0, padx=20, pady=(10, 10))
+        scaling_label = customtkinter.CTkLabel(
+            sidebar_frame, text="UI Scaling:", anchor="w")
         scaling_label.grid(row=9, column=0, padx=20, pady=(10, 0))
         scaling_optionemenu = customtkinter.CTkOptionMenu(sidebar_frame,
-                                                                   values=["80%", "90%", "100%", "110%", "120%"],
-                                                                   command=self.change_scaling_event)
+                                                          values=[
+                                                              "80%", "90%", "100%", "110%", "120%"],
+                                                          command=self.change_scaling_event)
         scaling_optionemenu.grid(row=10, column=0, padx=20, pady=(10, 20))
         appearance_mode_optionemenu.set("Dark")
         scaling_optionemenu.set("100%")
 
     def configure_mainContent(self):
         self.mainEntry_frame = customtkinter.CTkFrame(self)
-        self.mainEntry_frame.grid(row=1, column=1, rowspan=3, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.mainEntry_frame.grid(row=1, column=1, rowspan=3, padx=(
+            20, 0), pady=(20, 0), sticky="nsew")
 
         self.mainResults_frame = customtkinter.CTkFrame(self)
-        self.mainResults_frame.grid(row=1, column=2, rowspan=2, padx=(20,20), pady=(20,0), sticky="nsew")
+        self.mainResults_frame.grid(row=1, column=2, rowspan=2, padx=(
+            20, 20), pady=(20, 0), sticky="nsew")
 
         self.mainSolution_frame = customtkinter.CTkFrame(self)
-        self.mainSolution_frame.grid(row=3, column=2, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        self.mainSolution_frame.grid(row=3, column=2, padx=(
+            20, 20), pady=(20, 0), sticky="nsew")
         self.mainSolution_frame.grid_columnconfigure(0, weight=1)
 
-        self.clear_content_button = customtkinter.CTkButton(self, text="Limpiar contenido",fg_color="transparent",border_width=1, text_color=("gray10", "#DCE4EE"),command=self.clear_matrix_content)
-        self.clear_content_button.grid(row=4, column=1, padx=(20, 0), pady=(20, 20), sticky="nsew")
+        self.clear_content_button = customtkinter.CTkButton(self, text="Limpiar contenido", fg_color="transparent", border_width=1, text_color=(
+            "gray10", "#DCE4EE"), command=self.clear_matrix_content)
+        self.clear_content_button.grid(
+            row=4, column=1, padx=(20, 0), pady=(20, 20), sticky="nsew")
 
-        self.bottomBar_frame_button_1 = customtkinter.CTkButton(master=self, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-        self.bottomBar_frame_button_1.grid(row=4, column=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
+        self.bottomBar_frame_button_1 = customtkinter.CTkButton(
+            master=self, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
+        self.bottomBar_frame_button_1.grid(
+            row=4, column=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
     def create_matrix_entries(self, rows, columns):
         for widget in self.mainEntry_frame.winfo_children():
@@ -129,11 +148,12 @@ class App(customtkinter.CTk):
                 bg_color = bg_color_constant if j == constant_term_column else bg_color_default
                 entry = customtkinter.CTkEntry(self.mainEntry_frame, width=entry_width, height=entry_height,
                                                corner_radius=5, fg_color=bg_color)
-                entry.place(x=start_x + j * (entry_width + padding), y=start_y + i * (entry_height + padding))
+                entry.place(x=start_x + j * (entry_width + padding),
+                            y=start_y + i * (entry_height + padding))
                 row_entries.append(entry)
             self.matrix_entries.append(row_entries)
 
-    #Maneja la gauss_jordan
+    # Maneja la gauss_jordan
     def gauss_jordan(self):
         rows = len(self.matrix_entries)
         columns = len(self.matrix_entries[0])
@@ -193,15 +213,19 @@ class App(customtkinter.CTk):
         start_y = max(start_y, 10)
 
         for i in range(rows):
-            self.mainResults_frame.grid_rowconfigure(i, weight=1, uniform='row')
+            self.mainResults_frame.grid_rowconfigure(
+                i, weight=1, uniform='row')
             for j in range(columns):
-                self.mainResults_frame.grid_columnconfigure(j, weight=1, uniform='col')
+                self.mainResults_frame.grid_columnconfigure(
+                    j, weight=1, uniform='col')
                 value = matrix[i][j]
                 label = customtkinter.CTkLabel(self.mainResults_frame, text=str(value),
                                                width=entry_width, height=entry_height,
                                                corner_radius=5, fg_color=bg_color, anchor='center')
-                label.grid(row=i, column=j, padx=(5, 5), pady=(5, 5), sticky="nsew")
-                label.place(x=start_x + j * (entry_width + 10), y=start_y + i * (entry_height + 10))
+                label.grid(row=i, column=j, padx=(5, 5),
+                           pady=(5, 5), sticky="nsew")
+                label.place(x=start_x + j * (entry_width + 10),
+                            y=start_y + i * (entry_height + 10))
 
     def display_solution(self, matrix):
         for widget in self.mainSolution_frame.winfo_children():
@@ -211,14 +235,17 @@ class App(customtkinter.CTk):
         columns = len(matrix[0])
         solution_texts = []
 
-        rank = sum(1 for i in range(rows) if any(matrix[i][j] != 0 for j in range(columns - 1)))
+        rank = sum(1 for i in range(rows) if any(
+            matrix[i][j] != 0 for j in range(columns - 1)))
         if rank < rows:
-            solution_texts.append("El sistema tiene infinitas soluciones debido a las filas cero.")
+            solution_texts.append(
+                "El sistema tiene infinitas soluciones debido a las filas cero.")
 
         for i in range(rows):
             if all(matrix[i][j] == 0 for j in range(columns - 1)):
                 if matrix[i][-1] != 0:
-                    solution_texts = ["Sistema inconsistente. No hay solución."]
+                    solution_texts = [
+                        "Sistema inconsistente. No hay solución."]
                     break
                 else:
                     continue
@@ -226,7 +253,8 @@ class App(customtkinter.CTk):
                 terms = []
                 for j in range(columns - 1):
                     if matrix[i][j] != 0:
-                        coefficient = f"{matrix[i][j]:.2f}" if isinstance(matrix[i][j], float) else str(matrix[i][j])
+                        coefficient = f"{matrix[i][j]:.2f}" if isinstance(
+                            matrix[i][j], float) else str(matrix[i][j])
                         terms.append(f"{coefficient}x_{j + 1}")
                 constant = matrix[i][-1]
                 equation = " + ".join(terms) + f" = {constant}"
@@ -236,12 +264,15 @@ class App(customtkinter.CTk):
         if not solution_texts:
             solution_text = "El sistema tiene infinitas soluciones (sistema indeterminado)."
 
-        label = customtkinter.CTkLabel(self.mainSolution_frame, text=solution_text, anchor="w", justify=tk.LEFT)
+        label = customtkinter.CTkLabel(
+            self.mainSolution_frame, text=solution_text, anchor="w", justify=tk.LEFT)
         label.grid(sticky="nsew", padx=20, pady=20)
+
     def calculate_inverse(self):
         # Obtener las dimensiones de la matriz de la GUI, excluyendo la columna de términos constantes
         rows = len(self.matrix_entries)
-        columns = len(self.matrix_entries[0]) - 1  # Excluir la última columna (términos constantes)
+        # Excluir la última columna (términos constantes)
+        columns = len(self.matrix_entries[0]) - 1
 
         if rows != columns:
             tkinter.messagebox.showerror("Error",
@@ -265,7 +296,8 @@ class App(customtkinter.CTk):
                         matrix[i], matrix[j] = matrix[j], matrix[i]
                         break
                 else:
-                    tkinter.messagebox.showerror("Error", "La matriz es singular y no tiene inversa.")
+                    tkinter.messagebox.showerror(
+                        "Error", "La matriz es singular y no tiene inversa.")
                     return
 
             # Normalizar la fila del pivote
@@ -276,7 +308,8 @@ class App(customtkinter.CTk):
             for j in range(n):
                 if i != j:
                     factor = matrix[j][i]
-                    matrix[j] = [matrix[j][k] - factor * matrix[i][k] for k in range(2 * n)]
+                    matrix[j] = [matrix[j][k] - factor * matrix[i][k]
+                                 for k in range(2 * n)]
 
         # Extraer la matriz inversa de la parte derecha de la matriz aumentada
         inverse_matrix = [row[n:] for row in matrix]
@@ -286,23 +319,91 @@ class App(customtkinter.CTk):
 
     def Determinantes(self):
         print("Determinantes")
+
     def Suma(self):
         print("Suma")
+
     def Multiplicacion(self):
         print("Multiplicacion")
+
     def Configuracion(self):
         print("Configuracion")
+
     def sidebar_button_event(self):
         print("Sidebar button clicked")
-        
+
     def import_document(self):
+
+
+        try:
+            img_name : str = "drop_and_drag.png"
+            image_path = os.path.join("images", img_name)
+            pil_image = Image.open(image_path).resize((50, 50))
+            image_tk = customtkinter.CTkImage(light_image=pil_image, dark_image=pil_image, size=(50, 50))
+            label_of_image = customtkinter.CTkLabel(self, image=image_tk)
+            label_of_image.grid(row=1, column=1, padx=10, pady=10)
+        except FileNotFoundError:
+            print(
+                f"Error: El archivo {img_name} no se encontró en la carpeta 'images'.")
+        # Abre una ventana para que el usuario seleccione un archivo
+    #     filepath = filedialog.askopenfilename()
+
+    # if filepath:  # Verifica si se seleccionó un archivo
+    #     try:
+    #         with open(filepath, 'r') as file:  # Abre el archivo en modo lectura
+    #             matriz = []
+    #             for line in file:  # Itera sobre cada línea del archivo
+    #                 # Convierte cada elemento de la línea en un float y crea una lista
+    #                 fila = [float(x) for x in line.split()]
+    #                 matriz.append(fila)  # Agrega la fila a la matriz
+
+    #         # Elimina todas las entradas existentes en la interfaz gráfica
+    #         for fila in matriz_entries:
+    #             for entry in fila:
+    #                 entry.grid_forget()  # Quita cada entrada de la vista
+    #         matriz_entries.clear()  # Borra todas las entradas de la matriz
+
+    #         # Crea nuevas entradas en la interfaz gráfica para la nueva matriz importada
+    #         filas_importadas = len(matriz)
+    #         columnas_importadas = len(matriz[0])
+
+    #         for i in range(filas_importadas):
+    #             fila_entries = []
+    #             for j in range(columnas_importadas):
+    #                 entry = Entry(entradaDeMatriz, width=8, font=("Century Gothic", 13),
+    #                               highlightthickness=1, highlightbackground="black")
+    #                 # Ajusta la posición de la entrada en la interfaz gráfica
+    #                 entry.grid(row=i, column=j, padx=5, pady=5, ipady=8)
+    #                 fila_entries.append(entry)
+    #             # Agrega la fila de entradas a la matriz de entradas
+    #             matriz_entries.append(fila_entries)
+
+    #         # Muestra la matriz importada en las nuevas entradas creadas
+    #         for i in range(filas_importadas):
+    #             for j in range(columnas_importadas):
+    #                 # Borra el contenido actual de la entrada
+    #                 matriz_entries[i][j].delete(0, END)
+    #                 # Inserta el valor de la matriz en la entrada
+    #                 matriz_entries[i][j].insert(END, str(matriz[i][j]))
+
+    #     except FileNotFoundError:
+    #         # Muestra un mensaje de error si el archivo no se encuentra
+    #         messagebox.showerror("Error", "El archivo no fue encontrado.")
+    #     except ValueError:
+    #         # Muestra un mensaje de error si hay valores no válidos en el archivo
+    #         messagebox.showerror(
+    #             "Error", "El archivo contiene valores no válidos.")
+    #     except Exception as e:
+    #         # Muestra un mensaje de error genérico si ocurre cualquier otra excepción
+    #         messagebox.showerror("Error", f"No se pudo abrir el archivo: {e}")
         print("Import document")
-        
+
     def export_document(self):
         print("Export document")
-    
+
     def toolbar_button_click(self):
         print("Toolbar button clicked")
+
     def create_rounded_rectangle(self, x1, y1, x2, y2, radius=25, **kwargs):
         points = [x1+radius, y1,
                   x1+radius, y1, x2-radius, y1, x2-radius, y1, x2, y1,
@@ -317,7 +418,8 @@ class App(customtkinter.CTk):
         self.matrix_window.title("Adjust Matrix Size")
         self.matrix_window.geometry("600x500")
 
-        self.canvas = tk.Canvas(self.matrix_window, bg='white', width=500, height=400)
+        self.canvas = tk.Canvas(
+            self.matrix_window, bg='white', width=500, height=400)
         self.canvas.pack(pady=20, padx=20)
 
         self.rows = 3
@@ -325,17 +427,20 @@ class App(customtkinter.CTk):
         self.cell_size = 50
         self.cell_padding = 10
 
-        self.row_box = ttk.Combobox(self.matrix_window, values=list(range(1, 11)), state="readonly", width=5)
+        self.row_box = ttk.Combobox(self.matrix_window, values=list(
+            range(1, 11)), state="readonly", width=5)
         self.row_box.set(self.rows)
         self.row_box.pack(side='left', padx=10)
         self.row_box.bind("<<ComboboxSelected>>", self.update_rows_columns)
 
-        self.col_box = ttk.Combobox(self.matrix_window, values=list(range(1, 11)), state="readonly", width=5)
+        self.col_box = ttk.Combobox(self.matrix_window, values=list(
+            range(1, 11)), state="readonly", width=5)
         self.col_box.set(self.columns)
         self.col_box.pack(side='left', padx=10)
         self.col_box.bind("<<ComboboxSelected>>", self.update_rows_columns)
 
-        self.accept_button = customtkinter.CTkButton(self.matrix_window, text="Aceptar", command=self.accept_size)
+        self.accept_button = customtkinter.CTkButton(
+            self.matrix_window, text="Aceptar", command=self.accept_size)
         self.accept_button.pack(side='right', padx=10, pady=10)
 
         self.canvas.update()
@@ -344,8 +449,10 @@ class App(customtkinter.CTk):
 
     def draw_matrix(self):
         self.canvas.delete("all")
-        start_x = (self.canvas.winfo_width() - (self.columns * (self.cell_size + self.cell_padding))) // 2
-        start_y = (self.canvas.winfo_height() - (self.rows * (self.cell_size + self.cell_padding))) // 2
+        start_x = (self.canvas.winfo_width() - (self.columns *
+                   (self.cell_size + self.cell_padding))) // 2
+        start_y = (self.canvas.winfo_height() - (self.rows *
+                   (self.cell_size + self.cell_padding))) // 2
 
         for i in range(self.rows):
             for j in range(self.columns):
@@ -353,31 +460,41 @@ class App(customtkinter.CTk):
                 y1 = start_y + i * (self.cell_size + self.cell_padding)
                 x2 = x1 + self.cell_size
                 y2 = y1 + self.cell_size
-                self.create_rounded_rectangle(x1, y1, x2, y2, radius=10, outline="black", fill="lightgrey")
+                self.create_rounded_rectangle(
+                    x1, y1, x2, y2, radius=10, outline="black", fill="lightgrey")
 
         bracket_width = 20
         self.canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width,
                                 start_y + self.rows * (self.cell_size + self.cell_padding), width=2)
         self.canvas.create_line(start_x + self.columns * (self.cell_size + self.cell_padding) + bracket_width, start_y,
-                                start_x + self.columns * (self.cell_size + self.cell_padding) + bracket_width,
+                                start_x + self.columns *
+                                (self.cell_size + self.cell_padding) +
+                                bracket_width,
                                 start_y + self.rows * (self.cell_size + self.cell_padding), width=2)
 
         self.canvas.create_rectangle(
-            start_x + self.columns * (self.cell_size + self.cell_padding) - self.cell_padding,
-            start_y + self.rows * (self.cell_size + self.cell_padding) - self.cell_padding,
+            start_x + self.columns *
+            (self.cell_size + self.cell_padding) - self.cell_padding,
+            start_y + self.rows *
+            (self.cell_size + self.cell_padding) - self.cell_padding,
             start_x + self.columns * (self.cell_size + self.cell_padding),
             start_y + self.rows * (self.cell_size + self.cell_padding),
             fill="red", outline="black", width=2
         )
+
     def resize_matrix(self, event):
-        start_x = (self.canvas.winfo_width() - self.columns * (self.cell_size + self.cell_padding)) // 2
-        start_y = (self.canvas.winfo_height() - self.rows * (self.cell_size + self.cell_padding)) // 2
+        start_x = (self.canvas.winfo_width() - self.columns *
+                   (self.cell_size + self.cell_padding)) // 2
+        start_y = (self.canvas.winfo_height() - self.rows *
+                   (self.cell_size + self.cell_padding)) // 2
 
         cursor_x = max(self.canvas.canvasx(event.x) - start_x, 0)
         cursor_y = max(self.canvas.canvasy(event.y) - start_y, 0)
 
-        new_columns = max(int(cursor_x / (self.cell_size + self.cell_padding)) + 1, 1)
-        new_rows = max(int(cursor_y / (self.cell_size + self.cell_padding)) + 1, 1)
+        new_columns = max(
+            int(cursor_x / (self.cell_size + self.cell_padding)) + 1, 1)
+        new_rows = max(
+            int(cursor_y / (self.cell_size + self.cell_padding)) + 1, 1)
 
         if new_columns != self.columns or new_rows != self.rows:
             self.columns = min(new_columns, 10)
@@ -423,10 +540,12 @@ class App(customtkinter.CTk):
         customtkinter.set_appearance_mode(new_appearance_mode)
 
     def change_scaling_event(self, new_scaling: str):
-        customtkinter.set_widget_scaling(int(new_scaling.replace("%", "")) / 100)
+        customtkinter.set_widget_scaling(
+            int(new_scaling.replace("%", "")) / 100)
 
     def run(self):
         self.mainloop()
+
 
 if __name__ == "__main__":
     app = App()
