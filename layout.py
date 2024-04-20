@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox
 import customtkinter
+from tkinterdnd2 import 
 import os
 
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
@@ -26,13 +27,14 @@ class App(customtkinter.CTk):
         self.configure_topbar()
         self.configure_sidebar()
         self.configure_mainContent()
+        self.
 
     def configure_topbar(self):
         topbar_frame = customtkinter.CTkFrame(self, height=100, corner_radius=0)
         topbar_frame.grid(row=0, column=1, columnspan=3, sticky="nsew")
 
-        button_info = [("importar.png", "Importar", self.toolbar_button_click),
-                       ("exportar.png", "Exportar", self.toolbar_button_click),
+        button_info = [("importar.png", "Importar", self.import_document),
+                       ("exportar.png", "Exportar", self.export_document),
                        ("resolver.png", "Resolver", self.gauss_jordan),
                        ("inversa.png", "Inversa", self.calculate_inverse),
                        ("limpiar.png", "Reiniciar", self.clear_all),
@@ -131,6 +133,7 @@ class App(customtkinter.CTk):
                 row_entries.append(entry)
             self.matrix_entries.append(row_entries)
 
+    #Maneja la gauss_jordan
     def gauss_jordan(self):
         rows = len(self.matrix_entries)
         columns = len(self.matrix_entries[0])
@@ -291,6 +294,13 @@ class App(customtkinter.CTk):
         print("Configuracion")
     def sidebar_button_event(self):
         print("Sidebar button clicked")
+        
+    def import_document(self):
+        print("Import document")
+        
+    def export_document(self):
+        print("Export document")
+    
     def toolbar_button_click(self):
         print("Toolbar button clicked")
     def create_rounded_rectangle(self, x1, y1, x2, y2, radius=25, **kwargs):
