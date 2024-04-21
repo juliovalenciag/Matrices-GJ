@@ -1,6 +1,7 @@
 from doctest import master
 from fractions import Fraction
 import os
+from turtle import back
 from typing import LiteralString
 
 from PIL import ImageTk, Image
@@ -337,7 +338,6 @@ class App(customtkinter.CTk):
 
     def import_document(self):
         def get_path(event):
-            pathLabel.configure(text=event.data)
             nameVarString.set(event.data)
             file_name = os.path.normpath(event.data)
             if file_name and nameVarString.get().endswith(".txt"):  # Verifica si se seleccionó un archivo
@@ -355,37 +355,8 @@ class App(customtkinter.CTk):
                     # Crea nuevas entradas en la interfaz gráfica para la nueva matriz importada
                     filas_importadas = len(matriz)
                     columnas_importadas = len(matriz[0])
-                    entry_width = 60
-                    entry_height = 60
-                    padding = 5
-                    constant_term_column = columnas_importadas - 1
-
-                    if customtkinter.get_appearance_mode() == "Dark":
-                        bg_color_default = "#2C2F33"
-                        bg_color_constant = "#60656b"
-                    else:
-                        bg_color_default = "white"
-                        bg_color_constant = "lightgrey"
-
-                    total_width = columnas_importadas * (entry_width + padding)
-                    total_height = filas_importadas * (entry_height + padding)
-
-                    start_x = (self.mainEntry_frame.winfo_width() -
-                               total_width) // 2
-                    start_y = (
-                        self.mainEntry_frame.winfo_height() - total_height) // 2
-
-                    for i in range(filas_importadas):
-                        fila_entries = []
-                        for j in range(columnas_importadas):
-                            bg_color = bg_color_constant if j == constant_term_column else bg_color_default
-                            entry = customtkinter.CTkEntry(self.mainEntry_frame, width=entry_width, height=entry_height,
-                                                           corner_radius=5, fg_color=bg_color)
-                            entry.place(x=start_x + j * (entry_width + padding),
-                                        y=start_y + i * (entry_height + padding))
-                            fila_entries.append(entry)
-                        # Agrega la fila de entradas a la matriz de entradas
-                        self.matrix_entries.append(fila_entries)
+                    
+                    self.create_matrix_entries(filas_importadas, columnas_importadas)
 
                     # Muestra la matriz importada en las nuevas entradas creadas
                     for i in range(filas_importadas):
@@ -395,6 +366,8 @@ class App(customtkinter.CTk):
                             # Inserta el valor de la matriz en la entrada
                             self.matrix_entries[i][j].insert(
                                 END, str(matriz[i][j]))
+                            
+                    root.destroy()  # Cierra la ventana de selección de archivo
 
                 except FileNotFoundError:
                     # Muestra un mensaje de error si el archivo no se encuentra
@@ -408,6 +381,10 @@ class App(customtkinter.CTk):
                     # Muestra un mensaje de error genérico si ocurre cualquier otra excepción
                     tkinter.messagebox.showerror(
                         "Error", f"No se pudo abrir el archivo: {e}")
+            else:
+                # Muestra un mensaje de error si no se seleccionó un archivo o si el archivo no es un archivo de texto
+                tkinter.messagebox.showerror(
+                    "Error", "Por favor, seleccione un archivo de texto (.txt)")
 
 
         root = TKdnd.Window_drag_and_drop()
@@ -415,8 +392,8 @@ class App(customtkinter.CTk):
         root.title("Get file path")
         try:
             image_path = os.path.join("images", "drop_and_drag.png")
-            pil_image = Image.open(image_path).resize((350, 150))
-            image_tk_t = ImageTk.PhotoImage(pil_image)
+            pil_image = Image.open(image_path).resize((350, 180))
+            image_tk_t = customtkinter.CTkImage(pil_image, size=(350, 180))
         except FileNotFoundError:
             print(
                 f"Error: El archivo drop_and_drag.png no se encontró en la carpeta 'images'.")
@@ -425,14 +402,13 @@ class App(customtkinter.CTk):
 
         nameVarString = StringVar()
 
-        entryWidget = customtkinter.CTkEntry(root)
+
+        entryWidget = customtkinter.CTkEntry(root,width=500, height=500, bg_color="blue", fg_color="blue", border_color="white",)
         entryWidget.pack(side=TOP, padx=5, pady=5)
 
-        pathLabel = Label(
-            root, text="Drag and drop file in the entry box", image=image_tk_t, compound="left")
-        pathLabel.place(x=100, y=100)
-        #pathLabel._image = image_tk_t
-
+        background_Label = customtkinter.CTkLabel(root,text="Pon tu archivo aqui")
+        background_Label.place(x=200, y=200)
+        
         entryWidget.drop_target_register(TKdnd.DND_ALL)
         entryWidget.dnd_bind("<<Drop>>", get_path)
 
