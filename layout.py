@@ -1,12 +1,11 @@
 from doctest import master
 from fractions import Fraction
+import fractions
 import os
-from turtle import back
-from typing import LiteralString
-
 from PIL import ImageTk, Image
 import tkinter as tk
-from tkinter import END, TOP, Label, StringVar, image_names, ttk
+from tkinter import END, TOP, StringVar, image_names, ttk
+import tkinter.filedialog as filedialog
 import tkinter.messagebox
 import customtkinter
 from numpy import pad
@@ -346,7 +345,7 @@ class App(customtkinter.CTk):
                         matriz = []
                         for line in file:  # Itera sobre cada línea del archivo
                             # Convierte cada elemento de la línea en un float y crea una lista
-                            fila = [float(x) for x in line.split()]
+                            fila = [Fraction(x) for x in line.split()]
                             matriz.append(fila)  # Agrega la fila a la matriz
 
                     # Elimina todas las entradas existentes en la interfaz gráfica
@@ -365,7 +364,7 @@ class App(customtkinter.CTk):
                             self.matrix_entries[i][j].delete(0, END)
                             # Inserta el valor de la matriz en la entrada
                             self.matrix_entries[i][j].insert(
-                                END, str(matriz[i][j]))
+                                END, Fraction(str(matriz[i][j])))
                             
                     root.destroy()  # Cierra la ventana de selección de archivo
 
@@ -415,7 +414,26 @@ class App(customtkinter.CTk):
         print("Import document")
 
     def export_document(self):
-        print("Export document")
+        # Abrir una ventana del explorador de archivos para que el usuario seleccione la ubicación y el nombre del archivo
+        filepath = filedialog.asksaveasfilename(defaultextension=".txt")
+
+        if filepath:  # Verifica si se seleccionó un archivo para guardar
+            try:
+                # Abrir el archivo en modo escritura y escribir los datos de la matriz en él
+                with open(filepath, 'w') as file:
+                    for fila in self.matrix_entries:  # Itera sobre cada fila en la matriz de entradas
+                        for entry in fila:  # Itera sobre cada entrada en la fila actual
+                            valor = entry.get()  # Obtiene el valor de la entrada actual
+                            if valor:  # Verifica si hay un valor en la entrada
+                                file.write(str(Fraction(valor)) + " ")  # Escribe el valor seguido de un espacio en el archivo
+                            else:
+                                file.write("0")  # Escribe "0.0" seguido de un espacio si no hay valor en la entrada
+                        file.write("\n")  # Agrega un salto de línea al final de cada fila en el archivo
+
+                tkinter.messagebox.showinfo("Éxito", "La matriz ha sido exportada exitosamente.")  # Muestra un mensaje de éxito después de exportar la matriz
+            except Exception as e:
+                # Manejar cualquier error que pueda ocurrir al escribir en el archivo
+                tkinter.messagebox.showerror("Error", f"No se pudo exportar la matriz: {e}")  # Muestra un mensaje de error si no se puede exportar la matriz
 
     def toolbar_button_click(self):
         print("Toolbar button clicked")
