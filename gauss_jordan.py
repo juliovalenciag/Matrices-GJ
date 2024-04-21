@@ -6,6 +6,7 @@ from tkinter import ttk
 import tkinter.messagebox
 import customtkinter
 import os
+import modulos.drop_and_drag.drop_and_drag as TKdnd
 
 
 class GaussJordanFrame(customtkinter.CTkFrame):
@@ -18,8 +19,8 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         topbar_frame = customtkinter.CTkFrame(self, height=100, corner_radius=0)
         topbar_frame.grid(row=0, column=1, columnspan=3, sticky="nsew")
 
-        button_info = [("importar.png", "Importar", self.toolbar_button_click),
-                       ("exportar.png", "Exportar", self.toolbar_button_click),
+        button_info = [("importar.png", "Importar", self.import_document),
+                       ("exportar.png", "Exportar", self.export_document),
                        ("resolver.png", "Resolver", self.gauss_jordan),
                        ("inversa.png", "Inversa", self.calculate_inverse),
                        ("limpiar.png", "Reiniciar", self.clear_all),
@@ -361,23 +362,6 @@ class GaussJordanFrame(customtkinter.CTkFrame):
             fill="red", outline="black", width=2
         )
 
-    def resize_matrix(self, event):
-        start_x = (self.canvas.winfo_width() - self.columns * (self.cell_size + self.cell_padding)) // 2
-        start_y = (self.canvas.winfo_height() - self.rows * (self.cell_size + self.cell_padding)) // 2
-
-        cursor_x = max(self.canvas.canvasx(event.x) - start_x, 0)
-        cursor_y = max(self.canvas.canvasy(event.y) - start_y, 0)
-
-        new_columns = max(int(cursor_x / (self.cell_size + self.cell_padding)) + 1, 1)
-        new_rows = max(int(cursor_y / (self.cell_size + self.cell_padding)) + 1, 1)
-
-        if new_columns != self.columns or new_rows != self.rows:
-            self.columns = min(new_columns, 10)
-            self.rows = min(new_rows, 10)
-            self.row_box.set(self.rows)
-            self.col_box.set(self.columns)
-            self.draw_matrix()
-
     def accept_size(self):
         rows = int(self.row_box.get())
         columns = int(self.col_box.get())
@@ -393,6 +377,12 @@ class GaussJordanFrame(customtkinter.CTkFrame):
 
         for widget in self.mainSolution_frame.winfo_children():
             widget.destroy()
+            
+    def import_document(self):
+        TKdnd.import_document(self)
+    
+    def export_document(self):
+        TKdnd.export_document(self)
 
     def clear_matrix_content(self):
         for row_entries in self.matrix_entries:

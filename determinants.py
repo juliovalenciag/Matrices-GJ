@@ -6,6 +6,7 @@ from tkinter import ttk
 import tkinter.messagebox
 import customtkinter
 import os
+import modulos.drop_and_drag.drop_and_drag as TKdnd
 
 
 class DeterminantsFrame(customtkinter.CTkFrame):
@@ -22,8 +23,8 @@ class DeterminantsFrame(customtkinter.CTkFrame):
         topbar_frame = customtkinter.CTkFrame(self, height=100, corner_radius=0)
         topbar_frame.grid(row=0, column=1, columnspan=3, sticky="nsew")
 
-        button_info = [("importar.png", "Importar", self.toolbar_button_click),
-                       ("exportar.png", "Exportar", self.toolbar_button_click),
+        button_info = [("importar.png", "Importar", self.import_document),
+                       ("exportar.png", "Exportar", self.export_document),
                        ("resolver.png", "Resolver", self.toolbar_button_click),
                        ("inversa.png", "Inversa", self.toolbar_button_click),
                        ("limpiar.png", "Reiniciar",self.toolbar_button_click ),
@@ -137,6 +138,12 @@ class DeterminantsFrame(customtkinter.CTkFrame):
         self.columns = int(self.col_box.get())
         self.draw_matrix()
         self.create_matrix_entries(self.rows, self.columns)
+
+    def import_document(self):
+        TKdnd.import_document(self)
+    
+    def export_document(self):
+        TKdnd.export_document(self)
 
     def create_rounded_rectangle(self, x1, y1, x2, y2, radius=25, **kwargs):
         points = [x1+radius, y1,
