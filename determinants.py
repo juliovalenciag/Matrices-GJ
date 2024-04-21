@@ -18,6 +18,9 @@ class DeterminantsFrame(customtkinter.CTkFrame):
         self.cell_size = 50
         self.cell_padding = 10
 
+        self.size = 3
+
+
     def configure_topbar(self):
         topbar_frame = customtkinter.CTkFrame(self, height=100, corner_radius=0)
         topbar_frame.grid(row=0, column=1, columnspan=3, sticky="nsew")
@@ -78,7 +81,6 @@ class DeterminantsFrame(customtkinter.CTkFrame):
         self.matrix_window.title("Adjust Matrix Size")
         self.matrix_window.geometry("600x500")
 
-        self.size = 3
         self.canvas = tk.Canvas(self.matrix_window, width=500, height=400)
         self.canvas.pack(pady=20, padx=20)
         self.canvas.bind("<B1-Motion>", self.resize_matrix)
@@ -87,8 +89,7 @@ class DeterminantsFrame(customtkinter.CTkFrame):
 
     def draw_matrix(self, size):
         self.canvas.delete("all")
-        start_x = start_y = 50
-        end_x = end_y = start_x + size * (self.cell_size + self.cell_padding) - self.cell_padding
+        start_x = start_y = 50  # Start position for the grid.
 
         for i in range(size):
             for j in range(size):
@@ -96,16 +97,39 @@ class DeterminantsFrame(customtkinter.CTkFrame):
                 y1 = start_y + i * (self.cell_size + self.cell_padding)
                 x2 = x1 + self.cell_size
                 y2 = y1 + self.cell_size
-                self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="lightgrey")
+                self.create_rounded_rectangle(x1, y1, x2, y2, outline="black", fill="lightgrey")
+
+        self.canvas.create_rectangle(start_x + size * (self.cell_size + self.cell_padding) - self.cell_padding,
+                                     start_y + size * (self.cell_size + self.cell_padding) - self.cell_padding,
+                                     start_x + size * (self.cell_size + self.cell_padding),
+                                     start_y + size * (self.cell_size + self.cell_padding),
+                                     fill="red", outline="black", width=2)
     def resize_matrix(self, event):
-        size = int((max(event.x, event.y) - 50) / (self.cell_size + self.cell_padding)) + 1
-        if size != self.size and 1 <= size <= 10:
-            self.size = size
+        new_size = int((max(event.x, event.y) - 50) / (self.cell_size + self.cell_padding)) + 1
+        if new_size != self.size and 1 <= new_size <= 10:
+            self.size = new_size
             self.draw_matrix(self.size)
 
     def accept_size(self):
         self.create_matrix_entries(self.size)
         self.matrix_window.destroy()
+
+
+
+    def update_rows_columns(self, event=None):
+        self.rows = int(self.row_box.get())
+        self.columns = int(self.col_box.get())
+        self.draw_matrix()
+        self.create_matrix_entries(self.rows, self.columns)
+
+    def create_rounded_rectangle(self, x1, y1, x2, y2, radius=10, **kwargs):
+        points = [x1 + radius, y1,
+                  x1 + radius, y1, x2 - radius, y1, x2 - radius, y1,
+                  x2, y1, x2, y1 + radius, x2, y1 + radius, x2, y2 - radius,
+                  x2, y2 - radius, x2, y2, x2 - radius, y2, x2 - radius, y2,
+                  x1 + radius, y2, x1 + radius, y2, x1, y2, x1, y2 - radius,
+                  x1, y2 - radius, x1, y1 + radius, x1, y1 + radius, x1, y1]
+        self.canvas.create_polygon(points, **kwargs, smooth=True)
 
     def create_matrix_entries(self, size):
         for widget in self.mainEntry_frame.winfo_children():
@@ -117,11 +141,8 @@ class DeterminantsFrame(customtkinter.CTkFrame):
         padding = 5
         bg_color_default = "#2C2F33" if customtkinter.get_appearance_mode() == "Dark" else "white"
 
-        total_width = size * (entry_width + padding)
-        total_height = size * (entry_height + padding)
-
-        start_x = (self.mainEntry_frame.winfo_width() - total_width) // 2
-        start_y = (self.mainEntry_frame.winfo_height() - total_height) // 2
+        start_x = (self.mainEntry_frame.winfo_width() - size * (entry_width + padding)) // 2
+        start_y = (self.mainEntry_frame.winfo_height() - size * (entry_height + padding)) // 2
 
         for i in range(size):
             row_entries = []
@@ -131,21 +152,6 @@ class DeterminantsFrame(customtkinter.CTkFrame):
                 entry.place(x=start_x + j * (entry_width + padding), y=start_y + i * (entry_height + padding))
                 row_entries.append(entry)
             self.matrix_entries.append(row_entries)
-
-    def update_rows_columns(self, event=None):
-        self.rows = int(self.row_box.get())
-        self.columns = int(self.col_box.get())
-        self.draw_matrix()
-        self.create_matrix_entries(self.rows, self.columns)
-
-    def create_rounded_rectangle(self, x1, y1, x2, y2, radius=25, **kwargs):
-        points = [x1+radius, y1,
-                  x1+radius, y1, x2-radius, y1, x2-radius, y1, x2, y1,
-                  x2, y1, x2, y1+radius, x2, y1+radius, x2, y2-radius,
-                  x2, y2-radius, x2, y2, x2-radius, y2, x2-radius, y2,
-                  x1+radius, y2, x1+radius, y2, x1, y2, x1, y2-radius,
-                  x1, y2-radius, x1, y1+radius, x1, y1+radius, x1, y1]
-        return self.canvas.create_polygon(points, **kwargs, smooth=True)
 
     def clear_matrix_content(self):
         self.create_matrix_entries(3)
