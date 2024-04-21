@@ -1,12 +1,16 @@
+from doctest import master
 from fractions import Fraction
+import os
+from typing import LiteralString
 
 from PIL import ImageTk, Image
 import tkinter as tk
-from tkinter import image_names, ttk
+from tkinter import END, TOP, Label, StringVar, image_names, ttk
 import tkinter.messagebox
 import customtkinter
 from numpy import pad
 import os
+import modulos.drop_and_drag.drop_and_drag as TKdnd
 
 # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_appearance_mode("Dark")
@@ -30,7 +34,6 @@ class App(customtkinter.CTk):
         self.configure_topbar()
         self.configure_sidebar()
         self.configure_mainContent()
-        
 
     def configure_topbar(self):
         topbar_frame = customtkinter.CTkFrame(
@@ -333,69 +336,106 @@ class App(customtkinter.CTk):
         print("Sidebar button clicked")
 
     def import_document(self):
+        def get_path(event):
+            pathLabel.configure(text=event.data)
+            nameVarString.set(event.data)
+            file_name = os.path.normpath(event.data)
+            if file_name and nameVarString.get().endswith(".txt"):  # Verifica si se seleccionó un archivo
+                try:
+                    with open(file_name, 'r') as file:  # Abre el archivo en modo lectura
+                        matriz = []
+                        for line in file:  # Itera sobre cada línea del archivo
+                            # Convierte cada elemento de la línea en un float y crea una lista
+                            fila = [float(x) for x in line.split()]
+                            matriz.append(fila)  # Agrega la fila a la matriz
+
+                    # Elimina todas las entradas existentes en la interfaz gráfica
+                    self.clear_all()
+
+                    # Crea nuevas entradas en la interfaz gráfica para la nueva matriz importada
+                    filas_importadas = len(matriz)
+                    columnas_importadas = len(matriz[0])
+                    entry_width = 60
+                    entry_height = 60
+                    padding = 5
+                    constant_term_column = columnas_importadas - 1
+
+                    if customtkinter.get_appearance_mode() == "Dark":
+                        bg_color_default = "#2C2F33"
+                        bg_color_constant = "#60656b"
+                    else:
+                        bg_color_default = "white"
+                        bg_color_constant = "lightgrey"
+
+                    total_width = columnas_importadas * (entry_width + padding)
+                    total_height = filas_importadas * (entry_height + padding)
+
+                    start_x = (self.mainEntry_frame.winfo_width() -
+                               total_width) // 2
+                    start_y = (
+                        self.mainEntry_frame.winfo_height() - total_height) // 2
+
+                    for i in range(filas_importadas):
+                        fila_entries = []
+                        for j in range(columnas_importadas):
+                            bg_color = bg_color_constant if j == constant_term_column else bg_color_default
+                            entry = customtkinter.CTkEntry(self.mainEntry_frame, width=entry_width, height=entry_height,
+                                                           corner_radius=5, fg_color=bg_color)
+                            entry.place(x=start_x + j * (entry_width + padding),
+                                        y=start_y + i * (entry_height + padding))
+                            fila_entries.append(entry)
+                        # Agrega la fila de entradas a la matriz de entradas
+                        self.matrix_entries.append(fila_entries)
+
+                    # Muestra la matriz importada en las nuevas entradas creadas
+                    for i in range(filas_importadas):
+                        for j in range(columnas_importadas):
+                            # Borra el contenido actual de la entrada
+                            self.matrix_entries[i][j].delete(0, END)
+                            # Inserta el valor de la matriz en la entrada
+                            self.matrix_entries[i][j].insert(
+                                END, str(matriz[i][j]))
+
+                except FileNotFoundError:
+                    # Muestra un mensaje de error si el archivo no se encuentra
+                    tkinter.messagebox.showerror(
+                        "Error", "El archivo no fue encontrado.")
+                except ValueError:
+                    # Muestra un mensaje de error si hay valores no válidos en el archivo
+                    tkinter.messagebox.showerror(
+                        "Error", "El archivo contiene valores no válidos.")
+                except Exception as e:
+                    # Muestra un mensaje de error genérico si ocurre cualquier otra excepción
+                    tkinter.messagebox.showerror(
+                        "Error", f"No se pudo abrir el archivo: {e}")
 
 
+        root = TKdnd.Window_drag_and_drop()
+        root.geometry("500x500")
+        root.title("Get file path")
         try:
-            img_name : str = "drop_and_drag.png"
-            image_path = os.path.join("images", img_name)
-            pil_image = Image.open(image_path).resize((50, 50))
-            image_tk = customtkinter.CTkImage(light_image=pil_image, dark_image=pil_image, size=(50, 50))
-            label_of_image = customtkinter.CTkLabel(self, image=image_tk)
-            label_of_image.grid(row=1, column=1, padx=10, pady=10)
+            image_path = os.path.join("images", "drop_and_drag.png")
+            pil_image = Image.open(image_path).resize((350, 150))
+            image_tk_t = ImageTk.PhotoImage(pil_image)
         except FileNotFoundError:
             print(
-                f"Error: El archivo {img_name} no se encontró en la carpeta 'images'.")
-        # Abre una ventana para que el usuario seleccione un archivo
-    #     filepath = filedialog.askopenfilename()
+                f"Error: El archivo drop_and_drag.png no se encontró en la carpeta 'images'.")
+        except Exception as e:
+            print(f"Error: {e}")
 
-    # if filepath:  # Verifica si se seleccionó un archivo
-    #     try:
-    #         with open(filepath, 'r') as file:  # Abre el archivo en modo lectura
-    #             matriz = []
-    #             for line in file:  # Itera sobre cada línea del archivo
-    #                 # Convierte cada elemento de la línea en un float y crea una lista
-    #                 fila = [float(x) for x in line.split()]
-    #                 matriz.append(fila)  # Agrega la fila a la matriz
+        nameVarString = StringVar()
 
-    #         # Elimina todas las entradas existentes en la interfaz gráfica
-    #         for fila in matriz_entries:
-    #             for entry in fila:
-    #                 entry.grid_forget()  # Quita cada entrada de la vista
-    #         matriz_entries.clear()  # Borra todas las entradas de la matriz
+        entryWidget = customtkinter.CTkEntry(root)
+        entryWidget.pack(side=TOP, padx=5, pady=5)
 
-    #         # Crea nuevas entradas en la interfaz gráfica para la nueva matriz importada
-    #         filas_importadas = len(matriz)
-    #         columnas_importadas = len(matriz[0])
+        pathLabel = Label(
+            root, text="Drag and drop file in the entry box", image=image_tk_t, compound="left")
+        pathLabel.place(x=100, y=100)
+        #pathLabel._image = image_tk_t
 
-    #         for i in range(filas_importadas):
-    #             fila_entries = []
-    #             for j in range(columnas_importadas):
-    #                 entry = Entry(entradaDeMatriz, width=8, font=("Century Gothic", 13),
-    #                               highlightthickness=1, highlightbackground="black")
-    #                 # Ajusta la posición de la entrada en la interfaz gráfica
-    #                 entry.grid(row=i, column=j, padx=5, pady=5, ipady=8)
-    #                 fila_entries.append(entry)
-    #             # Agrega la fila de entradas a la matriz de entradas
-    #             matriz_entries.append(fila_entries)
+        entryWidget.drop_target_register(TKdnd.DND_ALL)
+        entryWidget.dnd_bind("<<Drop>>", get_path)
 
-    #         # Muestra la matriz importada en las nuevas entradas creadas
-    #         for i in range(filas_importadas):
-    #             for j in range(columnas_importadas):
-    #                 # Borra el contenido actual de la entrada
-    #                 matriz_entries[i][j].delete(0, END)
-    #                 # Inserta el valor de la matriz en la entrada
-    #                 matriz_entries[i][j].insert(END, str(matriz[i][j]))
-
-    #     except FileNotFoundError:
-    #         # Muestra un mensaje de error si el archivo no se encuentra
-    #         messagebox.showerror("Error", "El archivo no fue encontrado.")
-    #     except ValueError:
-    #         # Muestra un mensaje de error si hay valores no válidos en el archivo
-    #         messagebox.showerror(
-    #             "Error", "El archivo contiene valores no válidos.")
-    #     except Exception as e:
-    #         # Muestra un mensaje de error genérico si ocurre cualquier otra excepción
-    #         messagebox.showerror("Error", f"No se pudo abrir el archivo: {e}")
         print("Import document")
 
     def export_document(self):
