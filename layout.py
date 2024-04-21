@@ -70,9 +70,14 @@ class App(customtkinter.CTk):
                                             font=customtkinter.CTkFont(size=20, weight="bold"))
         text_label.grid(row=0, column=0, padx=20, pady=(10, 10))
 
-        buttons_info = [("Gauss-Jordan", self.gauss_jordan), ("Determinantes", self.Determinantes),
-                        ("Suma", self.Suma), ("Multiplicacion", self.Multiplicacion),
-                        ("Configuración", self.Configuracion)]
+        # Define buttons without executing the method, just pass the reference
+        buttons_info = [
+            ("Gauss-Jordan", self.gauss_jordan),
+            ("Determinantes", self.setup_determinants_view),  # Just pass the method reference
+            ("Suma", self.Suma),
+            ("Multiplicacion", self.Multiplicacion),
+            ("Configuración", self.Configuracion)
+        ]
 
         for i, (text, command) in enumerate(buttons_info, start=1):
             button = customtkinter.CTkButton(
@@ -82,16 +87,13 @@ class App(customtkinter.CTk):
         appearance_mode_label = customtkinter.CTkLabel(
             sidebar_frame, text="Appearance Mode:", anchor="w")
         appearance_mode_label.grid(row=7, column=0, padx=20, pady=(10, 0))
-        appearance_mode_optionemenu = customtkinter.CTkOptionMenu(sidebar_frame, values=[
-                                                                  "Light", "Dark", "System"], command=self.change_appearance_mode_event)
-        appearance_mode_optionemenu.grid(
-            row=8, column=0, padx=20, pady=(10, 10))
-        scaling_label = customtkinter.CTkLabel(
-            sidebar_frame, text="UI Scaling:", anchor="w")
+        appearance_mode_optionemenu = customtkinter.CTkOptionMenu(sidebar_frame, values=["Light", "Dark", "System"],
+                                                                  command=self.change_appearance_mode_event)
+        appearance_mode_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 10))
+        scaling_label = customtkinter.CTkLabel(sidebar_frame, text="UI Scaling:", anchor="w")
         scaling_label.grid(row=9, column=0, padx=20, pady=(10, 0))
-        scaling_optionemenu = customtkinter.CTkOptionMenu(sidebar_frame,
                                                           values=[
-                                                              "80%", "90%", "100%", "110%", "120%"],
+        scaling_optionemenu = customtkinter.CTkOptionMenu(sidebar_frame, values=["80%", "90%", "100%", "110%", "120%"],
                                                           command=self.change_scaling_event)
         scaling_optionemenu.grid(row=10, column=0, padx=20, pady=(10, 20))
         appearance_mode_optionemenu.set("Dark")
@@ -319,6 +321,7 @@ class App(customtkinter.CTk):
 
         # Mostrar solo la matriz inversa
         self.display_result_matrix(inverse_matrix)
+
 
     def Determinantes(self):
         print("Determinantes")
