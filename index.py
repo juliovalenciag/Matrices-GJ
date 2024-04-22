@@ -20,8 +20,6 @@ class App(customtkinter.CTk):
         self.configure_sidebar()
         self.create_main_content()
 
-
-
     def configure_gui(self):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -84,12 +82,12 @@ class App(customtkinter.CTk):
 
     def show_operations(self):
         self.clear_main_frame()
-        label = customtkinter.CTkLabel(self.main_frame, text="Sum Placeholder")
+        label = customtkinter.CTkLabel(self.main_frame, text="En desarrollo...")
         label.pack(pady=20)
 
     def show_configuration(self):
         self.clear_main_frame()
-        label = customtkinter.CTkLabel(self.main_frame, text="Configuration Placeholder")
+        label = customtkinter.CTkLabel(self.main_frame, text="Configuracion")
         label.pack(pady=20)
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
