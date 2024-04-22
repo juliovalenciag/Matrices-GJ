@@ -272,7 +272,7 @@ class DeterminantsFrame(customtkinter.CTkFrame):
         self.label_determinant.configure(
             text=f"Determinante: {determinant}")
         determinant, formula = self.calculate_determinant_and_formula(matrix)
-        self.display_determinant_formula(formula)
+        #self.display_determinant_formula(formula)
 
     def calculate_determinant_and_formula(self, matrix):
         if len(matrix) == 1:

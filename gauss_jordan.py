@@ -14,6 +14,8 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         self.configure_mainContent()
         self.configure_topbar()
 
+        self.after(100, lambda: self.create_matrix_entries(3, 4))
+
     def configure_topbar(self):
         topbar_frame = customtkinter.CTkFrame(self, height=100, corner_radius=0)
         topbar_frame.grid(row=0, column=1, columnspan=3, sticky="nsew")
@@ -40,32 +42,26 @@ class GaussJordanFrame(customtkinter.CTkFrame):
 
     def configure_mainContent(self):
         self.mainEntry_frame = customtkinter.CTkFrame(self)
-        self.mainEntry_frame.grid(row=1, column=1, rowspan=3, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.mainEntry_frame.grid(row=1, column=1, rowspan=3, padx=(20, 0), pady=(20, 20), sticky="nsew")
         self.grid_columnconfigure(1, weight=1)
+        self.mainEntry_frame.update_idletasks()
 
         self.mainSolution_frame = customtkinter.CTkFrame(self)
         self.mainSolution_frame.grid(row=1, column=2, rowspan=2, padx=(20, 20), pady=(20, 0), sticky="nsew")
         self.grid_columnconfigure(2, weight=1)
 
         self.mainResults_frame = customtkinter.CTkFrame(self)
-        self.mainResults_frame.grid(row=3, column=2, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        self.mainResults_frame.grid(row=3, column=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
         self.grid_rowconfigure(3, weight=1)
 
-        self.clear_content_button = customtkinter.CTkButton(self, text="Limpiar contenido", fg_color="transparent",
-                                                            border_width=1, text_color=("gray10", "#DCE4EE"),
-                                                            command=self.clear_matrix_content)
-        self.clear_content_button.grid(row=4, column=1, padx=(20, 0), pady=(20, 20), sticky="nsew")
-
-        self.clear_content_button = customtkinter.CTkButton(self, text="Boton", fg_color="transparent",
-                                                            border_width=1, text_color=("gray10", "#DCE4EE"),)
-        self.clear_content_button.grid(row=4, column=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
     def create_matrix_entries(self, rows, columns):
         for widget in self.mainEntry_frame.winfo_children():
             widget.destroy()
 
         self.matrix_entries = []
+        self.mainEntry_frame.update_idletasks()
 
         entry_width = 60
         entry_height = 60
@@ -289,7 +285,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         self.matrix_window.title("Adjust Matrix Size")
         self.matrix_window.geometry("600x500")
 
-        bg_color = "#333333" if customtkinter.get_appearance_mode() == "Dark" else "white"
+        bg_color = "#191919" if customtkinter.get_appearance_mode() == "Dark" else "white"
         self.canvas = tk.Canvas(self.matrix_window, bg=bg_color, width=500, height=400)
         self.canvas.pack(pady=20, padx=20)
 
@@ -385,19 +381,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         self.matrix_window.destroy()
 
     def clear_all(self):
-        for widget in self.mainEntry_frame.winfo_children():
-            widget.destroy()
-
-        for widget in self.mainResults_frame.winfo_children():
-            widget.destroy()
-
-        for widget in self.mainSolution_frame.winfo_children():
-            widget.destroy()
-
-    def clear_matrix_content(self):
-        for row_entries in self.matrix_entries:
-            for entry in row_entries:
-                entry.delete(0, tk.END)
+        self.create_matrix_entries(3, 4)
 
         for widget in self.mainResults_frame.winfo_children():
             widget.destroy()

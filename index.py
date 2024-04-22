@@ -48,7 +48,7 @@ class App(customtkinter.CTk):
         appearance_mode_optionemenu = customtkinter.CTkOptionMenu(sidebar_frame, values=["Light", "Dark", "System"],
                                                                   command=self.change_appearance_mode_event)
         appearance_mode_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 10))
-        scaling_label = customtkinter.CTkLabel(sidebar_frame, text="UI Scaling:", anchor="w")
+        scaling_label = customtkinter.CTkLabel(sidebar_frame, text="Escala:", anchor="w")
         scaling_label.grid(row=9, column=0, padx=20, pady=(10, 0))
         scaling_optionemenu = customtkinter.CTkOptionMenu(sidebar_frame, values=["80%", "90%", "100%", "110%", "120%"],
                                                           command=self.change_scaling_event)
