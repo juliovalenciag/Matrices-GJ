@@ -1,4 +1,6 @@
 **/__pycache__/
 *.toc
 
-build/main/
+build/
+.idea/
+dist/
