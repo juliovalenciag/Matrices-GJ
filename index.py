@@ -20,8 +20,6 @@ class App(customtkinter.CTk):
         self.configure_sidebar()
         self.create_main_content()
 
-
-
     def configure_gui(self):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -50,7 +48,7 @@ class App(customtkinter.CTk):
         appearance_mode_optionemenu = customtkinter.CTkOptionMenu(sidebar_frame, values=["Light", "Dark", "System"],
                                                                   command=self.change_appearance_mode_event)
         appearance_mode_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 10))
-        scaling_label = customtkinter.CTkLabel(sidebar_frame, text="UI Scaling:", anchor="w")
+        scaling_label = customtkinter.CTkLabel(sidebar_frame, text="Escala:", anchor="w")
         scaling_label.grid(row=9, column=0, padx=20, pady=(10, 0))
         scaling_optionemenu = customtkinter.CTkOptionMenu(sidebar_frame, values=["80%", "90%", "100%", "110%", "120%"],
                                                           command=self.change_scaling_event)
@@ -84,12 +82,12 @@ class App(customtkinter.CTk):
 
     def show_operations(self):
         self.clear_main_frame()
-        label = customtkinter.CTkLabel(self.main_frame, text="Sum Placeholder")
+        label = customtkinter.CTkLabel(self.main_frame, text="En desarrollo...")
         label.pack(pady=20)
 
     def show_configuration(self):
         self.clear_main_frame()
-        label = customtkinter.CTkLabel(self.main_frame, text="Configuration Placeholder")
+        label = customtkinter.CTkLabel(self.main_frame, text="Configuracion")
         label.pack(pady=20)
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
