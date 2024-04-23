@@ -71,6 +71,7 @@ def import_document(secondary_window):
     root = Window_drag_and_drop()
     root.geometry("500x500")
     root.title("Get file path")
+    root.attributes("-topmost", True)
     try:
         image_path = os.path.join("images", "drop_and_drag.png")
         pil_image = Image.open(image_path).resize((350, 180))

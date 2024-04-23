@@ -72,11 +72,11 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         if customtkinter.get_appearance_mode() == "Dark":
             bg_color_default = "#2C2F33"
             bg_color_constant = "#60656b"
-            bracket_color = "white"
+            bracket_color = "red"
         else:
             bg_color_default = "white"
             bg_color_constant = "lightgrey"
-            bracket_color = "black"
+            bracket_color = "blue"
 
         total_width = columns * (entry_width + padding)
         total_height = rows * (entry_height + padding)
@@ -285,6 +285,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         self.matrix_window = customtkinter.CTkToplevel(self)
         self.matrix_window.title("Adjust Matrix Size")
         self.matrix_window.geometry("600x500")
+        self.matrix_window.attributes("-topmost", True)
 
         bg_color = "#191919" if customtkinter.get_appearance_mode() == "Dark" else "white"
         self.canvas = tk.Canvas(self.matrix_window, bg=bg_color, width=500, height=400)
