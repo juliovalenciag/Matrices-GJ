@@ -48,6 +48,7 @@ def import_document(secondary_window):
                         secondary_window.matrix_entries[i][j].insert(
                             END, Fraction(str(matriz[i][j])))
 
+
                 root.destroy()  # Cierra la ventana de selección de archivo
 
             except FileNotFoundError:
@@ -87,8 +88,8 @@ def import_document(secondary_window):
     entryWidget.pack(side=TOP, padx=5, pady=5)
 
     background_Label = customtkinter.CTkLabel(
-        root, text="Pon tu archivo aqui")
-    background_Label.place(x=200, y=200)
+        root, text="Pon tu archivo en al zona azul")
+    background_Label.place(x=200, y=400)
 
     entryWidget.drop_target_register(DND_ALL)
     entryWidget.dnd_bind("<<Drop>>", get_path)
