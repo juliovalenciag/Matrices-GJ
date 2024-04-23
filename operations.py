@@ -9,11 +9,15 @@ import os
 class OperationsFrame(customtkinter.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
+
+        self.operation_buttons = []
+
         self.configure_mainContent()
         self.configure_toolbar()
 
-        #self.add_matrix_operations(self.firstTool_frame)
-        #self.add_matrix_operations(self.secondTool_frame)
+        self.add_matrix_operations(self.firstTool_frame)
+        self.add_matrix_operations(self.secondTool_frame)
+
 
         self.create_matrix_entries(self.firstEntry_frame, 3, 3)
         self.create_matrix_entries(self.secondEntry_frame, 3, 3)
@@ -40,6 +44,7 @@ class OperationsFrame(customtkinter.CTkFrame):
                                                  command=cmd, compound="top", fg_color=None, hover_color="gray")
                 button.image = tk_image
                 button.grid(row=i, column=0, padx=5, pady=5)
+                self.operation_buttons.append(button)
             except FileNotFoundError:
                 print(f"Error: El archivo {img_name} no se encontró en la carpeta 'images'.")
 
@@ -53,6 +58,7 @@ class OperationsFrame(customtkinter.CTkFrame):
         self.firstEntry_frame = customtkinter.CTkFrame(self)
         self.firstEntry_frame.grid(row=0, rowspan=2, column=0, padx=5, pady=5, sticky="nsew")
         self.first_matrix_entries = self.create_matrix_entries(self.firstEntry_frame, 3, 3)
+
 
         self.firstTool_frame = customtkinter.CTkFrame(self)
         self.firstTool_frame.grid(row=2, column=0, padx=5, pady=5, sticky="nsew")
@@ -73,10 +79,14 @@ class OperationsFrame(customtkinter.CTkFrame):
         self.mainResults_frame = customtkinter.CTkFrame(self)
         self.mainResults_frame.grid(row=0,column=3, rowspan=5, padx=5, pady=5, sticky="nsew")
 
-        #self.add_matrix_operations(self.firstTool_frame)
-        #self.add_matrix_operations(self.secondTool_frame)
+        development_label = customtkinter.CTkLabel(self.mainResults_frame, text="Módulo en desarrollo",
+                                                   font=("Arial", 14))
+        development_label.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
 
-    """
+        self.add_matrix_operations(self.firstTool_frame)
+        self.add_matrix_operations(self.secondTool_frame)
+
+
     def add_matrix_operations(self, tool_frame):
         operation_labels = ["Determinantes", "Matriz inversa", "Matriz transpuesta",
                             "Matriz multiplicada por:", "Matriz elevada a:"]
@@ -97,15 +107,13 @@ class OperationsFrame(customtkinter.CTkFrame):
                 button = customtkinter.CTkButton(row, text=label, command=command,
                                                  fg_color="transparent", hover_color="gray")
             button.grid(row=0, column=0, sticky="ew")
-    """
 
     def create_matrix_entries(self, frame, rows, columns):
+        self.disable_operations()  # Disable operations while updating matrix entries
         for widget in frame.winfo_children():
             widget.destroy()
 
         matrix_entries = []
-        frame.update_idletasks()
-
         for i in range(rows):
             row_entries = []
             for j in range(columns):
@@ -114,7 +122,16 @@ class OperationsFrame(customtkinter.CTkFrame):
                 row_entries.append(entry)
             matrix_entries.append(row_entries)
 
+        self.enable_operations()
         return matrix_entries
+
+    def disable_operations(self):
+        for button in self.operation_buttons:
+            button["state"] = "disabled"
+
+    def enable_operations(self):
+        for button in self.operation_buttons:
+            button["state"] = "normal"
 
     def matrix_size(self):
         self.matrix_window = customtkinter.CTkToplevel(self)
@@ -239,14 +256,13 @@ class OperationsFrame(customtkinter.CTkFrame):
     def sum_matrices(self):
         try:
             if not all(entry.winfo_exists() for row in self.first_matrix_entries for entry in row):
-                tkinter.messagebox.showerror("Error", "Intento de ejecutar una accion sin entradas.")
+                tkinter.messagebox.showerror("Error", "Attempt to operate on non-existing entries.")
                 return
 
             rows = len(self.first_matrix_entries)
             columns = len(self.first_matrix_entries[0])
-            if rows != len(self.second_matrix_entries) or any(
-                    len(row) != columns for row in self.second_matrix_entries):
-                tkinter.messagebox.showerror("Error", "Matrices deben tener la misma dimension.")
+            if rows != len(self.second_matrix_entries) or any(len(row) != columns for row in self.second_matrix_entries):
+                tkinter.messagebox.showerror("Error", "Matrices must be the same size to add.")
                 return
 
             result_matrix = []
