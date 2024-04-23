@@ -346,6 +346,10 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         self.canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width,
                                 start_y + self.rows * (self.cell_size + self.cell_padding),
                                 width=2, fill=bracket_color)
+        self.canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width,
+                                start_y + self.rows * (self.cell_size + self.cell_padding),
+                                width=2, fill=bracket_color)
+        
         self.canvas.create_line(start_x + self.columns * (self.cell_size + self.cell_padding) + bracket_width, start_y,
                                 start_x + self.columns * (self.cell_size + self.cell_padding) + bracket_width,
                                 start_y + self.rows * (self.cell_size + self.cell_padding),
