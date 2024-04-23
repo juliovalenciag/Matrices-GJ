@@ -284,7 +284,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
     def matrix_size(self):
         self.matrix_window = customtkinter.CTkToplevel(self)
         self.matrix_window.title("Adjust Matrix Size")
-        self.matrix_window.geometry("600x500")
+        self.matrix_window.geometry("800x600")
         self.matrix_window.attributes("-topmost", True)
 
         bg_color = "#191919" if customtkinter.get_appearance_mode() == "Dark" else "white"
@@ -296,20 +296,12 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         self.cell_size = 50
         self.cell_padding = 10
 
-
-        combobox_style = ttk.Style()
-        combobox_style.theme_use('alt')
-        combobox_style.configure("TCombobox", fieldbackground=bg_color, background=bg_color,
-                                 foreground='black' if customtkinter.get_appearance_mode() == "Light" else 'white')
-
-        self.row_box = ttk.Combobox(self.matrix_window, values=list(range(1, 11)), state="readonly", width=5,
-                                    style="TCombobox")
+        self.row_box = ttk.Combobox(self.matrix_window, values=list(range(1, 7)), state="readonly", width=10)
         self.row_box.set(self.rows)
         self.row_box.pack(side='left', padx=20, pady=20)
         self.row_box.bind("<<ComboboxSelected>>", self.update_rows_columns)
 
-        self.col_box = ttk.Combobox(self.matrix_window, values=list(range(1, 11)), state="readonly", width=5,
-                                    style="TCombobox")
+        self.col_box = ttk.Combobox(self.matrix_window, values=list(range(1, 7)), state="readonly", width=10, height=60)
         self.col_box.set(self.columns)
         self.col_box.pack(side='left', padx=20, pady=20)
         self.col_box.bind("<<ComboboxSelected>>", self.update_rows_columns)
