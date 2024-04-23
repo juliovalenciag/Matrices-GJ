@@ -80,7 +80,7 @@ class DeterminantsFrame(customtkinter.CTkFrame):
     def matrix_size(self):
         self.matrix_window = customtkinter.CTkToplevel(self)
         self.matrix_window.title("Adjust Matrix Size")
-        self.matrix_window.geometry("700x600")
+        self.matrix_window.geometry("800x600")
         self.canvas = tk.Canvas(self.matrix_window, width=500, height=500)
         self.canvas.pack(pady=20, padx=20)
         self.canvas.bind("<B1-Motion>", self.resize_matrix)

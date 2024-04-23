@@ -283,7 +283,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
     def matrix_size(self):
         self.matrix_window = customtkinter.CTkToplevel(self)
         self.matrix_window.title("Adjust Matrix Size")
-        self.matrix_window.geometry("600x500")
+        self.matrix_window.geometry("800x600")
 
         bg_color = "#191919" if customtkinter.get_appearance_mode() == "Dark" else "white"
         self.canvas = tk.Canvas(self.matrix_window, bg=bg_color, width=500, height=400)
@@ -294,20 +294,12 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         self.cell_size = 50
         self.cell_padding = 10
 
-
-        combobox_style = ttk.Style()
-        combobox_style.theme_use('alt')
-        combobox_style.configure("TCombobox", fieldbackground=bg_color, background=bg_color,
-                                 foreground='black' if customtkinter.get_appearance_mode() == "Light" else 'white')
-
-        self.row_box = ttk.Combobox(self.matrix_window, values=list(range(1, 11)), state="readonly", width=5,
-                                    style="TCombobox")
+        self.row_box = ttk.Combobox(self.matrix_window, values=list(range(1, 7)), state="readonly", width=10)
         self.row_box.set(self.rows)
         self.row_box.pack(side='left', padx=20, pady=20)
         self.row_box.bind("<<ComboboxSelected>>", self.update_rows_columns)
 
-        self.col_box = ttk.Combobox(self.matrix_window, values=list(range(1, 11)), state="readonly", width=5,
-                                    style="TCombobox")
+        self.col_box = ttk.Combobox(self.matrix_window, values=list(range(1, 7)), state="readonly", width=10, height=60)
         self.col_box.set(self.columns)
         self.col_box.pack(side='left', padx=20, pady=20)
         self.col_box.bind("<<ComboboxSelected>>", self.update_rows_columns)
@@ -356,23 +348,6 @@ class GaussJordanFrame(customtkinter.CTkFrame):
             start_y + self.rows * (self.cell_size + self.cell_padding),
             fill="red", outline="black", width=2
         )
-
-    def resize_matrix(self, event):
-        start_x = (self.canvas.winfo_width() - self.columns * (self.cell_size + self.cell_padding)) // 2
-        start_y = (self.canvas.winfo_height() - self.rows * (self.cell_size + self.cell_padding)) // 2
-
-        cursor_x = max(self.canvas.canvasx(event.x) - start_x, 0)
-        cursor_y = max(self.canvas.canvasy(event.y) - start_y, 0)
-
-        new_columns = max(int(cursor_x / (self.cell_size + self.cell_padding)) + 1, 1)
-        new_rows = max(int(cursor_y / (self.cell_size + self.cell_padding)) + 1, 1)
-
-        if new_columns != self.columns or new_rows != self.rows:
-            self.columns = min(new_columns, 10)
-            self.rows = min(new_rows, 10)
-            self.row_box.set(self.rows)
-            self.col_box.set(self.columns)
-            self.draw_matrix()
 
     def accept_size(self):
         rows = int(self.row_box.get())
