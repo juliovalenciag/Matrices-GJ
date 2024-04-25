@@ -15,7 +15,7 @@ class Window_drag_and_drop(customtkinter.CTkToplevel, TkinterDnD.DnDWrapper):
         self.TkdndVersion = TkinterDnD._require(self)
 
 
-def import_document(secondary_window):
+def import_document(secondary_window, page:str = ""):
     def get_path(event):
         nameVarString.set(event.data)
         file_name = os.path.normpath(event.data)
@@ -31,13 +31,21 @@ def import_document(secondary_window):
                 # Elimina todas las entradas existentes en la interfaz gráfica
                 secondary_window.clear_all()
 
+                #crear matriz para gauss-jordan 
+                if page == "<GJ>":
                 # Crea nuevas entradas en la interfaz gráfica para la nueva matriz importada
-                filas_importadas = len(matriz)
-                columnas_importadas = len(matriz[0])
-
-                secondary_window.create_matrix_entries(
-                    filas_importadas, columnas_importadas)
-
+                    filas_importadas = len(matriz)
+                    columnas_importadas = len(matriz[0])
+                    secondary_window.create_matrix_entries(
+                        filas_importadas, columnas_importadas)
+                    
+                #crear matriz para determinar
+                elif page == "<D>":
+                    filas_importadas = len(matriz)
+                    columnas_importadas = len(matriz)
+                    secondary_window.create_matrix_entries(
+                        len(matriz))
+                    
                 # Muestra la matriz importada en las nuevas entradas creadas
                 for i in range(filas_importadas):
                     for j in range(columnas_importadas):
@@ -103,7 +111,6 @@ def import_document(secondary_window):
 
 def export_document(secondary_window):
     # Abrir una ventana del explorador de archivos para que el usuario seleccione la ubicación y el nombre del archivo
-
     filepath = filedialog.asksaveasfilename(defaultextension=".txt")
 
     if filepath:  # Verifica si se seleccionó un archivo para guardar

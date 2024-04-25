@@ -371,7 +371,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
             widget.destroy()
             
     def import_document(self):
-        TKdnd.import_document(self)
+        TKdnd.import_document(self, "<GJ>")
     
     def export_document(self):
         TKdnd.export_document(self)

@@ -171,10 +171,10 @@ class DeterminantsFrame(customtkinter.CTkFrame):
 
 
     def import_document(self):
-        TKdnd.import_document(self)
+        TKdnd.import_document(self, "<D>")
     
     def export_document(self):
-        TKdnd.export_document(self)
+        TKdnd.export_document(self, "<D>")
         
     def clear_all(self):
         self.create_matrix_entries(self.size)
