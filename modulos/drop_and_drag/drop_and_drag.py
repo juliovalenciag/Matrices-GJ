@@ -92,7 +92,7 @@ def import_document(secondary_window, page:str = ""):
     nameVarString = StringVar()
 
     entryWidget = customtkinter.CTkEntry(
-        root, width=550, height=550, bg_color="blue", fg_color="blue", border_color="white",)
+        root, width=550, height=550, bg_color="white", fg_color="white", border_color="black",)
     entryWidget.pack(side=TOP, padx=5, pady=5)
 
     background_Label = customtkinter.CTkLabel(
