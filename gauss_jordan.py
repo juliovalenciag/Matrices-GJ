@@ -7,6 +7,8 @@ import tkinter.messagebox
 import customtkinter
 import os
 import modulos.drop_and_drag.drop_and_drag as TKdnd
+
+
 class GaussJordanFrame(customtkinter.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
@@ -53,6 +55,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         self.mainResults_frame.grid(row=3, column=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
         self.grid_rowconfigure(3, weight=1)
+
 
     def create_matrix_entries(self, rows, columns):
         for widget in self.mainEntry_frame.winfo_children():
@@ -378,6 +381,11 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         self.columns = int(self.col_box.get())
         self.draw_matrix()
         self.create_matrix_entries(self.rows, self.columns)
+
+    def toolbar_button_click(self):
+        print("Toolbar button clicked")
+
+
 
 if __name__ == "__main__":
     root = customtkinter.CTk()
