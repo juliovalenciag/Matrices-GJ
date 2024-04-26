@@ -1,4 +1,6 @@
+from ast import List
 from fractions import Fraction
+from re import T
 
 from PIL import ImageTk, Image
 import tkinter as tk
@@ -7,6 +9,8 @@ import tkinter.messagebox
 import customtkinter
 import os
 import modulos.drop_and_drag.drop_and_drag as TKdnd
+
+from modulos.verificador_variables.verificador import verificador_de_variables
 
 
 class GaussJordanFrame(customtkinter.CTkFrame):
@@ -206,31 +210,63 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         rows = len(matrix)
         columns = len(matrix[0])
         solution_texts = []
+        error_messege = ""
 
+        filas_de_ceros = []
+        
+        
         rank = sum(1 for i in range(rows) if any(matrix[i][j] != 0 for j in range(columns - 1)))
         if rank < rows:
-            solution_texts.append("El sistema tiene infinitas soluciones debido a las filas cero.")
+            error_messege = "El sistema tiene infinitas soluciones debido a las filas cero.\n"
 
+        terminos_sin = []       
         for i in range(rows):
             if all(matrix[i][j] == 0 for j in range(columns - 1)):
                 if matrix[i][-1] != 0:
-                    solution_texts = ["Sistema inconsistente. No hay solución."]
+                    error_messege = "Sistema inconsistente. No hay solución.\n"
                     break
                 else:
                     continue
             else:
+                terminos_sin.append([])
                 terms = []
                 for j in range(columns - 1):
                     if matrix[i][j] != 0:
-                        coefficient = f"{matrix[i][j]:.2f}" if isinstance(matrix[i][j], float) else str(matrix[i][j])
+                        coefficient = str(matrix[i][j])
+                        if coefficient == "1":
+                            terms.append(f"x_{j + 1}")
+                            terminos_sin[i].append(f"x_{j + 1}") 
+                            continue
+                            
                         terms.append(f"{coefficient}x_{j + 1}")
+                        terminos_sin[i].append(f"x_{j + 1}")
+                        
                 constant = matrix[i][-1]
-                equation = " + ".join(terms) + f" = {constant}"
+                equation = terms[0] + " = " + " - ".join(terms[1:]) + (f"{constant}" if len(terms) == 1 else (" + " + str(constant) if constant > 0 else ( "" if constant == 0 else str(constant))))
                 solution_texts.append(equation)
-
-        solution_text = "\n".join(solution_texts)
+                
+        soluciones_infinitas, variables = verificador_de_variables(terminos_sin)
+        solution_text = error_messege 
+        variables.sort()
+        solution_text += "{ " + "( " + ",".join(variables) +" ) |" + "\n"
+        solution_text += "\n".join(solution_texts) 
         if not solution_texts:
-            solution_text = "El sistema tiene infinitas soluciones (sistema indeterminado)."
+            solution_text = "El sistema tiene infinitas soluciones (sistema indeterminado). \n"
+            
+        
+        if soluciones_infinitas:
+            #solution_text += "\n Con las variables: " + ", ".join(soluciones_infinitas) + u' \u2208 ' + u'\u211d'
+            #solution_text += "\n Con las variables: " + ", ".join(soluciones_infinitas) + " ∈ R"
+            if len(soluciones_infinitas) == 1:
+                solution_text += "\n & " + soluciones_infinitas[0] + " }"
+            elif len(soluciones_infinitas) == 2:
+                solution_text += ",\n" + soluciones_infinitas[0] + " & " + soluciones_infinitas[1] + " }"
+            else:
+                solution_text += ",\n" + ", ".join(soluciones_infinitas[0:-2]) + "&" + soluciones_infinitas[-1] + " }"
+        else:
+            solution_text += " }"        
+        
+        print(solution_text)
 
         label = customtkinter.CTkLabel(self.mainSolution_frame, text=solution_text, anchor="w", justify=tk.LEFT)
         label.grid(sticky="nsew", padx=20, pady=20)
