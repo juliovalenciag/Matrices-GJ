@@ -19,6 +19,8 @@ def import_document(secondary_window, page:str = ""):
     def get_path(event):
         nameVarString.set(event.data)
         file_name = os.path.normpath(event.data)
+        print(file_name)
+        print(nameVarString.get())
         if file_name and nameVarString.get().endswith(".txt"):  # Verifica si se seleccionó un archivo
             try:
                 with open(file_name, 'r') as file:  # Abre el archivo en modo lectura
@@ -96,7 +98,7 @@ def import_document(secondary_window, page:str = ""):
     entryWidget.pack(side=TOP, padx=5, pady=5)
 
     background_Label = customtkinter.CTkLabel(
-        root, text="Pon tu archivo en al zona azul")
+        root, text="Pon tu archivo en al zona blanca")
     background_Label.place(x=170, y=400)
 
     button1 = customtkinter.CTkButton(root, width=80, height=30, text="Explorar archivos", command=lambda: import_explore(
