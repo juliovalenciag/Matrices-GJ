@@ -55,6 +55,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
 
         self.mainResults_frame = customtkinter.CTkFrame(self)
         self.mainResults_frame.grid(row=3, column=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
+        self.grid_columnconfigure(2, weight=1)
 
         self.grid_rowconfigure(3, weight=1)
 
@@ -81,8 +82,8 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         total_width = columns * (entry_width + padding)
         total_height = rows * (entry_height + padding)
 
-        start_x = (self.mainEntry_frame.winfo_width() - total_width) // 2
-        start_y = (self.mainEntry_frame.winfo_height() - total_height) // 2
+        start_x = 30
+        start_y = 20
 
         canvas = tk.Canvas(self.mainEntry_frame, width=self.mainEntry_frame.winfo_width(),
                            height=self.mainEntry_frame.winfo_height(), highlightthickness=0)
