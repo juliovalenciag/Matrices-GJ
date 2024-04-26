@@ -245,6 +245,12 @@ class GaussJordanFrame(customtkinter.CTkFrame):
                 equation = terms[0] + " = " + " - ".join(terms[1:]) + (f"{constant}" if len(terms) == 1 else (" + " + str(constant) if constant > 0 else ( "" if constant == 0 else str(constant))))
                 solution_texts.append(equation)
                 
+        if error_messege == "Sistema inconsistente. No hay solución.\n":
+            print(error_messege)
+            label = customtkinter.CTkLabel(self.mainSolution_frame, text=error_messege, anchor="w", justify=tk.LEFT)
+            label.grid(sticky="nsew", padx=20, pady=20)
+            return
+        
         soluciones_infinitas, variables = verificador_de_variables(terminos_sin)
         solution_text = error_messege 
         variables.sort()
