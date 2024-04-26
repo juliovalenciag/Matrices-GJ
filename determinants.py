@@ -10,9 +10,6 @@ import modulos.drop_and_drag.drop_and_drag as TKdnd
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
-
-
 class DeterminantsFrame(customtkinter.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
@@ -112,7 +109,6 @@ class DeterminantsFrame(customtkinter.CTkFrame):
                                      start_x + size * (self.cell_size + self.cell_padding),
                                      start_y + size * (self.cell_size + self.cell_padding),
                                      fill="red", outline="black", width=2)
-
 
     def resize_matrix(self, event):
         new_size = int((max(event.x, event.y) - 50) / (self.cell_size + self.cell_padding)) + 1
@@ -276,67 +272,8 @@ class DeterminantsFrame(customtkinter.CTkFrame):
                 for k in range(size):
                     matrix[j][k] -= factor * matrix[i][k]
 
-        # Mostrar el resultado
         self.label_determinant.configure(
             text=f"Determinante: {determinant}")
-        determinant, formula = self.calculate_determinant_and_formula(matrix)
-        #self.display_determinant_formula(formula)
-
-    def calculate_determinant_and_formula(self, matrix):
-        if len(matrix) == 1:
-            return matrix[0][0], f"det([{matrix[0][0]}])"
-
-        determinant = Fraction(0)
-        formula = ""
-
-        for col, element in enumerate(matrix[0]):
-            sub_matrix = [row[:col] + row[col + 1:] for row in matrix[1:]]
-            sub_det, sub_formula = self.calculate_determinant_and_formula(sub_matrix)
-            cofactor = ((-1) ** col) * element * sub_det
-            determinant += cofactor
-            sign = "+" if col % 2 == 0 else "-"
-            formula += f" {sign} {element} * det({sub_formula})"
-
-        return determinant, formula.lstrip(" +")
-
-"""
-    def display_determinant_formula(self, formula):
-        for widget in self.mainResults_frame.winfo_children():
-            widget.destroy()
-
-            # Create a frame for the canvas and scrollbar
-        container = tk.Frame(self.mainResults_frame)
-        container.pack(fill='both', expand=True)
-
-        # Create a horizontal scrollbar
-        h_scroll = tk.Scrollbar(container, orient='horizontal')
-        h_scroll.pack(side='bottom', fill='x')
-
-        # Create the text widget with the specified background color
-        text_widget = tk.Text(container, wrap='none', borderwidth=0, background="#333333", xscrollcommand=h_scroll.set)
-        text_widget.pack(fill='both', expand=True)
-
-        # Link the scrollbar to the text widget
-        h_scroll.config(command=text_widget.xview)
-
-        # Creating the figure to display the formula
-        fig = Figure(figsize=(5, 1), dpi=100)
-        ax = fig.add_subplot(111)
-        ax.text(0.5, 0.5, f'${formula}$', fontsize=12, verticalalignment='center', horizontalalignment='center')
-        ax.axis('off')
-
-        # Embed the figure in the text widget
-        canvas = FigureCanvasTkAgg(fig, master=text_widget)
-        canvas.draw()
-        widget = canvas.get_tk_widget()
-        widget.pack(side="top", fill="both", expand=True)
-
-        # Update the scrollable region of the canvas
-        text_widget.configure(state='disabled')
-"""
-
-
-
 
 if __name__ == "__main__":
     root = customtkinter.CTk()
