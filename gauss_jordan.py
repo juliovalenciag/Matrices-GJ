@@ -17,7 +17,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         super().__init__(parent)
         self.configure_mainContent()
         self.configure_topbar()
-        self.after(100, lambda: self.create_matrix_entries(3, 4))
+        self.after(100, self.update_matrix_view)
 
     def configure_topbar(self):
         topbar_frame = customtkinter.CTkFrame(self, height=100, corner_radius=0)
@@ -50,7 +50,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         self.mainEntry_frame.update_idletasks()
 
         self.mainSolution_frame = customtkinter.CTkFrame(self)
-        self.mainSolution_frame.grid(row=1, column=2, rowspan=2, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        self.mainSolution_frame.grid(row=1, column=2, padx=(20, 20), pady=(20, 0), sticky="nsew")
         self.grid_columnconfigure(2, weight=1)
 
         self.mainResults_frame = customtkinter.CTkFrame(self)
@@ -58,6 +58,8 @@ class GaussJordanFrame(customtkinter.CTkFrame):
 
         self.grid_rowconfigure(3, weight=1)
 
+    def update_matrix_view(self):
+        self.create_matrix_entries(3, 4)
 
     def create_matrix_entries(self, rows, columns):
         for widget in self.mainEntry_frame.winfo_children():
@@ -66,19 +68,15 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         self.matrix_entries = []
         self.mainEntry_frame.update_idletasks()
 
-        entry_width = 60
-        entry_height = 60
+        entry_width = max(60, 600 // max(columns, 10))
+        entry_height = max(60, 300 // max(rows, 10))
         padding = 5
         bracket_width = 20
+        bracket_depth = 10
 
-        if customtkinter.get_appearance_mode() == "Dark":
-            bg_color_default = "#2C2F33"
-            bg_color_constant = "#60656b"
-            bracket_color = "red"
-        else:
-            bg_color_default = "white"
-            bg_color_constant = "lightgrey"
-            bracket_color = "blue"
+        bg_color_default = "#2C2F33" if customtkinter.get_appearance_mode() == "Dark" else "white"
+        bg_color_constant = "#60656b" if customtkinter.get_appearance_mode() == "Dark" else "lightgrey"
+        bracket_color = "white" if customtkinter.get_appearance_mode() == "Dark" else "black"
 
         total_width = columns * (entry_width + padding)
         total_height = rows * (entry_height + padding)
@@ -90,10 +88,20 @@ class GaussJordanFrame(customtkinter.CTkFrame):
                            height=self.mainEntry_frame.winfo_height(), highlightthickness=0)
         canvas.pack(fill='both', expand=True)
 
-        canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width,
+        canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width, start_y + total_height, width=2,
+                           fill=bracket_color)
+        canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width + bracket_depth, start_y, width=2,
+                           fill=bracket_color)
+        canvas.create_line(start_x - bracket_width, start_y + total_height, start_x - bracket_width + bracket_depth,
                            start_y + total_height, width=2, fill=bracket_color)
+
         canvas.create_line(start_x + total_width + bracket_width, start_y, start_x + total_width + bracket_width,
                            start_y + total_height, width=2, fill=bracket_color)
+        canvas.create_line(start_x + total_width + bracket_width, start_y,
+                           start_x + total_width + bracket_width - bracket_depth, start_y, width=2, fill=bracket_color)
+        canvas.create_line(start_x + total_width + bracket_width, start_y + total_height,
+                           start_x + total_width + bracket_width - bracket_depth, start_y + total_height, width=2,
+                           fill=bracket_color)
 
         for i in range(rows):
             row_entries = []
@@ -101,10 +109,26 @@ class GaussJordanFrame(customtkinter.CTkFrame):
                 bg_color = bg_color_constant if j == columns - 1 else bg_color_default
                 entry = customtkinter.CTkEntry(self.mainEntry_frame, width=entry_width, height=entry_height,
                                                corner_radius=5, fg_color=bg_color)
-
                 entry.place(x=start_x + j * (entry_width + padding), y=start_y + i * (entry_height + padding))
                 row_entries.append(entry)
             self.matrix_entries.append(row_entries)
+
+    def draw_brackets(self, canvas, start_x, start_y, total_width, total_height, bracket_width, bracket_depth,
+                      bracket_color):
+        canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width, start_y + total_height, width=2,
+                           fill=bracket_color)
+        canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width + bracket_depth, start_y, width=2,
+                           fill=bracket_color)
+        canvas.create_line(start_x - bracket_width, start_y + total_height, start_x - bracket_width + bracket_depth,
+                           start_y + total_height, width=2, fill=bracket_color)
+
+        canvas.create_line(start_x + total_width + bracket_width, start_y, start_x + total_width + bracket_width,
+                           start_y + total_height, width=2, fill=bracket_color)
+        canvas.create_line(start_x + total_width + bracket_width, start_y,
+                           start_x + total_width + bracket_width - bracket_depth, start_y, width=2, fill=bracket_color)
+        canvas.create_line(start_x + total_width + bracket_width, start_y + total_height,
+                           start_x + total_width + bracket_width - bracket_depth, start_y + total_height, width=2,
+                           fill=bracket_color)
 
     def create_rounded_rectangle(self, x1, y1, x2, y2, radius=25, **kwargs):
         points = [x1+radius, y1,
@@ -415,8 +439,6 @@ class GaussJordanFrame(customtkinter.CTkFrame):
 
     def toolbar_button_click(self):
         print("Toolbar button clicked")
-
-
 
 if __name__ == "__main__":
     root = customtkinter.CTk()
