@@ -1,4 +1,6 @@
+from ast import List
 from fractions import Fraction
+from re import T
 
 from PIL import ImageTk, Image
 import tkinter as tk
@@ -8,13 +10,13 @@ import customtkinter
 import os
 import modulos.drop_and_drag.drop_and_drag as TKdnd
 
+from modulos.verificador_variables.verificador import verificador_de_variables
 
 class GaussJordanFrame(customtkinter.CTkFrame):
     def __init__(self, parent):
         super().__init__(parent)
         self.configure_mainContent()
         self.configure_topbar()
-
         self.after(100, lambda: self.create_matrix_entries(3, 4))
 
     def configure_topbar(self):
@@ -206,57 +208,90 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         rows = len(matrix)
         columns = len(matrix[0])
         solution_texts = []
+        error_messege = ""
+
+        filas_de_ceros = []
 
         rank = sum(1 for i in range(rows) if any(matrix[i][j] != 0 for j in range(columns - 1)))
         if rank < rows:
-            solution_texts.append("El sistema tiene infinitas soluciones debido a las filas cero.")
+            error_messege = "El sistema tiene infinitas soluciones debido a las filas cero.\n"
 
+        terminos_sin = []
         for i in range(rows):
             if all(matrix[i][j] == 0 for j in range(columns - 1)):
                 if matrix[i][-1] != 0:
-                    solution_texts = ["Sistema inconsistente. No hay solución."]
+                    error_messege = "Sistema inconsistente. No hay solución.\n"
                     break
                 else:
                     continue
             else:
+                terminos_sin.append([])
                 terms = []
                 for j in range(columns - 1):
                     if matrix[i][j] != 0:
-                        coefficient = f"{matrix[i][j]:.2f}" if isinstance(matrix[i][j], float) else str(matrix[i][j])
+                        coefficient = str(matrix[i][j])
+                        if coefficient == "1":
+                            terms.append(f"x_{j + 1}")
+                            terminos_sin[i].append(f"x_{j + 1}")
+                            continue
+
                         terms.append(f"{coefficient}x_{j + 1}")
                 constant = matrix[i][-1]
-                equation = " + ".join(terms) + f" = {constant}"
+                equation = terms[0] + " = " + " - ".join(terms[1:]) + (f"{constant}" if len(terms) == 1 else (
+                    " + " + str(constant) if constant > 0 else ("" if constant == 0 else str(constant))))
                 solution_texts.append(equation)
 
-        solution_text = "\n".join(solution_texts)
+        if error_messege == "Sistema inconsistente. No hay solución.\n":
+            print(error_messege)
+            label = customtkinter.CTkLabel(self.mainSolution_frame, text=error_messege, anchor="w", justify=tk.LEFT)
+            label.grid(sticky="nsew", padx=20, pady=20)
+            return
+
+        soluciones_infinitas, variables = verificador_de_variables(terminos_sin)
+        solution_text = error_messege
+        variables.sort()
+        solution_text += "{ " + "( " + ",".join(variables) + " ) |" + "\n"
+        solution_text += "\n".join(solution_texts)
+
         if not solution_texts:
             solution_text = "El sistema tiene infinitas soluciones (sistema indeterminado)."
+
+        if soluciones_infinitas:
+            # solution_text += "\n Con las variables: " + ", ".join(soluciones_infinitas) + u' \u2208 ' + u'\u211d'
+            # solution_text += "\n Con las variables: " + ", ".join(soluciones_infinitas) + " ∈ R"
+            if len(soluciones_infinitas) == 1:
+                solution_text += "\n & " + soluciones_infinitas[0] + " }"
+            elif len(soluciones_infinitas) == 2:
+                solution_text += ",\n" + soluciones_infinitas[0] + " & " + soluciones_infinitas[1] + " }"
+            else:
+                solution_text += ",\n" + ", ".join(soluciones_infinitas[0:-2]) + "&" + soluciones_infinitas[-1] + " }"
+        else:
+            solution_text += " }"
+
+        print(solution_text)
 
         label = customtkinter.CTkLabel(self.mainSolution_frame, text=solution_text, anchor="w", justify=tk.LEFT)
         label.grid(sticky="nsew", padx=20, pady=20)
 
     def calculate_inverse(self):
-        # Obtener las dimensiones de la matriz de la GUI, excluyendo la columna de términos constantes
         rows = len(self.matrix_entries)
-        columns = len(self.matrix_entries[0]) - 1  # Excluir la última columna (términos constantes)
+        columns = len(self.matrix_entries[0]) - 1
 
         if rows != columns:
             tkinter.messagebox.showerror("Error",
                                          "La matriz debe ser cuadrada (sin contar la columna de términos constantes) para calcular la inversa.")
             return
 
-        # Crear la matriz aumentada sin incluir la columna de términos constantes
         matrix = []
         for i, row_entries in enumerate(self.matrix_entries):
             row = [Fraction(entry.get() if entry.get() else 0) for entry in
-                   row_entries[:-1]]  # Excluir el último elemento de cada fila
+                   row_entries[:-1]]
             identity = [Fraction(int(i == j)) for j in range(rows)]
             matrix.append(row + identity)
 
-        # Aplicar el método Gauss-Jordan para obtener la inversa
         n = rows
         for i in range(n):
-            if matrix[i][i] == 0:  # Buscar un pivote no nulo
+            if matrix[i][i] == 0:
                 for j in range(i + 1, n):
                     if matrix[j][i] != 0:
                         matrix[i], matrix[j] = matrix[j], matrix[i]
@@ -265,20 +300,16 @@ class GaussJordanFrame(customtkinter.CTkFrame):
                     tkinter.messagebox.showerror("Error", "La matriz es singular y no tiene inversa.")
                     return
 
-            # Normalizar la fila del pivote
             pivot = matrix[i][i]
             matrix[i] = [x / pivot for x in matrix[i]]
 
-            # Eliminar todos los otros elementos en la columna actual
             for j in range(n):
                 if i != j:
                     factor = matrix[j][i]
                     matrix[j] = [matrix[j][k] - factor * matrix[i][k] for k in range(2 * n)]
 
-        # Extraer la matriz inversa de la parte derecha de la matriz aumentada
         inverse_matrix = [row[n:] for row in matrix]
 
-        # Mostrar solo la matriz inversa
         self.display_result_matrix(inverse_matrix)
 
     def matrix_size(self):
