@@ -55,7 +55,7 @@ class App(customtkinter.CTk):
             command=self.change_appearance_mode_event)
         appearance_mode_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 10))
         appearance_mode_optionemenu.set(customtkinter.get_appearance_mode())
-
+        """
         scaling_label = customtkinter.CTkLabel(self.sidebar_frame, text="Escala:", anchor="w")
         scaling_label.grid(row=9, column=0, padx=20, pady=(10, 0))
 
@@ -63,8 +63,7 @@ class App(customtkinter.CTk):
                                                           values=["80%", "90%", "100%", "110%", "120%"],
                                                           command=self.change_scaling_event)
         scaling_optionemenu.grid(row=10, column=0, padx=20, pady=(10, 20))
-        scaling_optionemenu.set("100%")
-
+        scaling_optionemenu.set("100%")"""
     def load_images(self):
         for base_name in ["gj1", "determinante", "operaciones"]:
             for suffix in ["", "LM"]:
@@ -82,7 +81,7 @@ class App(customtkinter.CTk):
         for i, (base_name, text, command) in enumerate([
             ("gj1", "Gauss-Jordan", self.show_gauss_jordan),
             ("determinante", "Determinante", self.show_determinants),
-            ("operaciones", "Operaciones", self.show_operations)
+            #("operaciones", "Operaciones", self.show_operations)
         ], start=1):
             img_name = f"{base_name}{mode_suffix}.png"
             image = self.images.get(img_name)
@@ -125,9 +124,9 @@ class App(customtkinter.CTk):
         frame = DeterminantsFrame(self.main_frame)
         frame.pack(fill="both", expand=True)
 
-    def show_operations(self):
+    """def show_operations(self):
         frame = OperationsFrame(self.main_frame)
-        frame.pack(fill="both", expand=True)
+        frame.pack(fill="both", expand=True)"""
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)

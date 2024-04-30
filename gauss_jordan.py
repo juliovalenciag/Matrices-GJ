@@ -44,11 +44,10 @@ class GaussJordanFrame(customtkinter.CTkFrame):
                 print(f"Error: El archivo {img_name} no se encontró en la carpeta 'images'.")
 
     def configure_mainContent(self):
-        self.mainEntry_frame = customtkinter.CTkFrame(self)
+        self.mainEntry_frame = customtkinter.CTkFrame(self, fg_color=None)
         self.mainEntry_frame.grid(row=1, column=1, rowspan=3, padx=(20, 0), pady=(20, 20), sticky="nsew")
         self.grid_columnconfigure(1, weight=1)
         self.mainEntry_frame.update_idletasks()
-
         self.mainSolution_frame = customtkinter.CTkFrame(self)
         self.mainSolution_frame.grid(row=1, column=2, padx=(20, 20), pady=(20, 0), sticky="nsew")
         self.grid_columnconfigure(2, weight=1)
@@ -75,41 +74,36 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         bracket_width = 20
         bracket_depth = 10
 
-        bg_color_default = "#2C2F33" if customtkinter.get_appearance_mode() == "Dark" else "white"
-        bg_color_constant = "#60656b" if customtkinter.get_appearance_mode() == "Dark" else "lightgrey"
-        bracket_color = "white" if customtkinter.get_appearance_mode() == "Dark" else "black"
+        if customtkinter.get_appearance_mode() == "Dark":
+            bg_color_default = "#2C2F33"
+            bg_color_constant = "#60656b"
+            bracket_color = "white"
+            canvas_bg = "#202020"
+        else:
+            bg_color_default = "white"
+            bg_color_constant = "lightgrey"
+            bracket_color = "black"
+            canvas_bg = "#e3e3e3"
 
         total_width = columns * (entry_width + padding)
         total_height = rows * (entry_height + padding)
 
-        start_x = 30
-        start_y = 20
+        start_x = bracket_width + padding
+        start_y = padding
 
-        canvas = tk.Canvas(self.mainEntry_frame, width=self.mainEntry_frame.winfo_width(),
-                           height=self.mainEntry_frame.winfo_height(), highlightthickness=0)
+        canvas = tk.Canvas(self.mainEntry_frame, width=total_width + 2 * bracket_width + 2 * padding,
+                           height=total_height + 2 * padding, bg=canvas_bg, highlightthickness=0)
         canvas.pack(fill='both', expand=True)
 
-        canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width, start_y + total_height, width=2,
-                           fill=bracket_color)
-        canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width + bracket_depth, start_y, width=2,
-                           fill=bracket_color)
-        canvas.create_line(start_x - bracket_width, start_y + total_height, start_x - bracket_width + bracket_depth,
-                           start_y + total_height, width=2, fill=bracket_color)
-
-        canvas.create_line(start_x + total_width + bracket_width, start_y, start_x + total_width + bracket_width,
-                           start_y + total_height, width=2, fill=bracket_color)
-        canvas.create_line(start_x + total_width + bracket_width, start_y,
-                           start_x + total_width + bracket_width - bracket_depth, start_y, width=2, fill=bracket_color)
-        canvas.create_line(start_x + total_width + bracket_width, start_y + total_height,
-                           start_x + total_width + bracket_width - bracket_depth, start_y + total_height, width=2,
-                           fill=bracket_color)
+        self.draw_brackets(canvas, start_x, start_y, total_width, total_height, bracket_width, bracket_depth,
+                           bracket_color)
 
         for i in range(rows):
             row_entries = []
             for j in range(columns):
                 bg_color = bg_color_constant if j == columns - 1 else bg_color_default
-                entry = customtkinter.CTkEntry(self.mainEntry_frame, width=entry_width, height=entry_height,
-                                               corner_radius=5, fg_color=bg_color)
+                entry = customtkinter.CTkEntry(canvas, width=entry_width, height=entry_height, corner_radius=5,
+                                               fg_color=bg_color)
                 entry.place(x=start_x + j * (entry_width + padding), y=start_y + i * (entry_height + padding))
                 row_entries.append(entry)
             self.matrix_entries.append(row_entries)
@@ -118,18 +112,16 @@ class GaussJordanFrame(customtkinter.CTkFrame):
                       bracket_color):
         canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width, start_y + total_height, width=2,
                            fill=bracket_color)
-        canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width + bracket_depth, start_y, width=2,
+        canvas.create_line(start_x - bracket_width, start_y, start_x, start_y, width=2, fill=bracket_color)
+        canvas.create_line(start_x - bracket_width, start_y + total_height, start_x, start_y + total_height, width=2,
                            fill=bracket_color)
-        canvas.create_line(start_x - bracket_width, start_y + total_height, start_x - bracket_width + bracket_depth,
-                           start_y + total_height, width=2, fill=bracket_color)
 
+        canvas.create_line(start_x + total_width, start_y, start_x + total_width + bracket_width, start_y, width=2,
+                           fill=bracket_color)
+        canvas.create_line(start_x + total_width, start_y + total_height, start_x + total_width + bracket_width,
+                           start_y + total_height, width=2, fill=bracket_color)
         canvas.create_line(start_x + total_width + bracket_width, start_y, start_x + total_width + bracket_width,
                            start_y + total_height, width=2, fill=bracket_color)
-        canvas.create_line(start_x + total_width + bracket_width, start_y,
-                           start_x + total_width + bracket_width - bracket_depth, start_y, width=2, fill=bracket_color)
-        canvas.create_line(start_x + total_width + bracket_width, start_y + total_height,
-                           start_x + total_width + bracket_width - bracket_depth, start_y + total_height, width=2,
-                           fill=bracket_color)
 
     def create_rounded_rectangle(self, x1, y1, x2, y2, radius=25, **kwargs):
         points = [x1+radius, y1,
@@ -371,9 +363,20 @@ class GaussJordanFrame(customtkinter.CTkFrame):
 
     def draw_matrix(self):
         self.canvas.delete("all")
-        start_x = (self.canvas.winfo_width() - (self.columns * (self.cell_size + self.cell_padding))) // 2
-        start_y = (self.canvas.winfo_height() - (self.rows * (self.cell_size + self.cell_padding))) // 2
 
+        # Asegurarse de que el canvas tenga el tamaño adecuado antes de dibujar.
+        self.canvas.update_idletasks()
+
+        canvas_width = self.canvas.winfo_width()
+        canvas_height = self.canvas.winfo_height()
+
+        total_width = self.columns * (self.cell_size + self.cell_padding)
+        total_height = self.rows * (self.cell_size + self.cell_padding)
+
+        start_x = (canvas_width - total_width) // 2
+        start_y = (canvas_height - total_height) // 2
+
+        # Dibujar las celdas de la matriz.
         for i in range(self.rows):
             for j in range(self.columns):
                 x1 = start_x + j * (self.cell_size + self.cell_padding)
@@ -382,26 +385,27 @@ class GaussJordanFrame(customtkinter.CTkFrame):
                 y2 = y1 + self.cell_size
                 self.create_rounded_rectangle(x1, y1, x2, y2, radius=10, outline="black", fill="lightgrey")
 
+        # Configuración de colores de los corchetes según el modo de apariencia.
+        bracket_color = "white" if customtkinter.get_appearance_mode() == "Dark" else "black"
         bracket_width = 20
-        start_x = (self.canvas.winfo_width() - self.columns * (self.cell_size + self.cell_padding)) // 2
-        start_y = (self.canvas.winfo_height() - self.rows * (self.cell_size + self.cell_padding)) // 2
 
-        if customtkinter.get_appearance_mode() == "Dark":
-            bracket_color = "white"
-        else:
-            bracket_color = "black"
+        # Dibujar los corchetes alrededor de la matriz.
+        self.canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width,
+                                start_y + total_height, width=2, fill=bracket_color)
+        self.canvas.create_line(start_x + total_width + bracket_width, start_y, start_x + total_width + bracket_width,
+                                start_y + total_height, width=2, fill=bracket_color)
 
-        self.canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width,
-                                start_y + self.rows * (self.cell_size + self.cell_padding),
-                                width=2, fill=bracket_color)
-        self.canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width,
-                                start_y + self.rows * (self.cell_size + self.cell_padding),
-                                width=2, fill=bracket_color)
-        
-        self.canvas.create_line(start_x + self.columns * (self.cell_size + self.cell_padding) + bracket_width, start_y,
-                                start_x + self.columns * (self.cell_size + self.cell_padding) + bracket_width,
-                                start_y + self.rows * (self.cell_size + self.cell_padding),
-                                width=2, fill=bracket_color)
+        # Añadir 'pestañas' a los corchetes a los lados de la matriz.
+        bracket_tab_length = 10
+        self.canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width + bracket_tab_length,
+                                start_y, width=2, fill=bracket_color)
+        self.canvas.create_line(start_x - bracket_width, start_y + total_height,
+                                start_x - bracket_width + bracket_tab_length,
+                                start_y + total_height, width=2, fill=bracket_color)
+        self.canvas.create_line(start_x + total_width + bracket_width, start_y, start_x + total_width,
+                                start_y, width=2, fill=bracket_color)
+        self.canvas.create_line(start_x + total_width + bracket_width, start_y + total_height, start_x + total_width,
+                                start_y + total_height, width=2, fill=bracket_color)
 
         self.canvas.create_rectangle(
             start_x + self.columns * (self.cell_size + self.cell_padding) - self.cell_padding,
