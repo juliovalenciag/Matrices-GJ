@@ -18,10 +18,11 @@ class Window_drag_and_drop(customtkinter.CTkToplevel, TkinterDnD.DnDWrapper):
 def import_document(secondary_window, page:str = ""):
     def get_path(event):
         nameVarString.set(event.data)
-        file_name = os.path.normpath(event.data)
+        file_name = os.path.normpath(event.data[1:-1])
         print(file_name)
+        print(nameVarString.get()[1:-1])
         print(nameVarString.get())
-        if file_name and nameVarString.get().endswith(".txt"):  # Verifica si se seleccionó un archivo
+        if file_name and (nameVarString.get().endswith(".txt") or nameVarString.get().endswith(".txt}")):  # Verifica si se seleccionó un archivo
             try:
                 with open(file_name, 'r') as file:  # Abre el archivo en modo lectura
                     matriz = []

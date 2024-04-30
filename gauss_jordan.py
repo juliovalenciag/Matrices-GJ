@@ -300,7 +300,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
 
     def calculate_inverse(self):
         rows = len(self.matrix_entries)
-        columns = len(self.matrix_entries[0]) - 1
+        columns = len(self.matrix_entries[0])
 
         if rows != columns:
             tkinter.messagebox.showerror("Error",
@@ -310,7 +310,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         matrix = []
         for i, row_entries in enumerate(self.matrix_entries):
             row = [Fraction(entry.get() if entry.get() else 0) for entry in
-                   row_entries[:-1]]
+                   row_entries]
             identity = [Fraction(int(i == j)) for j in range(rows)]
             matrix.append(row + identity)
 

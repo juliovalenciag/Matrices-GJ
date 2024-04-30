@@ -170,7 +170,7 @@ class DeterminantsFrame(customtkinter.CTkFrame):
         TKdnd.import_document(self, "<D>")
     
     def export_document(self):
-        TKdnd.export_document(self, "<D>")
+        TKdnd.export_document(self)
         
     def clear_all(self):
         self.create_matrix_entries(self.size)
@@ -180,7 +180,6 @@ class DeterminantsFrame(customtkinter.CTkFrame):
 
     def calculate_inverse(self):
         rows = len(self.matrix_entries)
-        columns = len(self.matrix_entries[0])
 
         matrix = []
         for i, row_entries in enumerate(self.matrix_entries):
