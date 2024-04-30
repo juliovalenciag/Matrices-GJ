@@ -64,14 +64,13 @@ class DeterminantsFrame(customtkinter.CTkFrame):
         self.grid_columnconfigure(2, weight=1)
 
         self.label_determinant = customtkinter.CTkLabel(self.mainSolution_frame, text="Determinante:",
-                                                        font=('Arial', 22))
+                                                        font=('Arial', 30))
         self.label_determinant.grid(row=1, column=1, padx=10, pady=10)
 
         self.mainResults_frame = customtkinter.CTkFrame(self)
         self.mainResults_frame.grid(row=3, column=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
         self.grid_rowconfigure(3, weight=1)
-
 
 
     #A  partir de aqui va lo de formar la matriz (cambiar tamaño):
@@ -91,7 +90,6 @@ class DeterminantsFrame(customtkinter.CTkFrame):
         self.size_box.bind("<<ComboboxSelected>>", self.update_size)
         accept_button = customtkinter.CTkButton(self.matrix_window, text="Aceptar", command=self.accept_size)
         accept_button.pack(side='right', padx=10, pady=10)
-
 
     def draw_matrix(self, size):
         self.canvas.delete("all")
@@ -144,27 +142,38 @@ class DeterminantsFrame(customtkinter.CTkFrame):
         entry_width = 60
         entry_height = 60
         padding = 5
+        bracket_width = 2
+        bracket_spacing = 10
         bg_color_default = "#2C2F33" if customtkinter.get_appearance_mode() == "Dark" else "white"
+        frame_bg_color = "#202020" if customtkinter.get_appearance_mode() == "Dark" else "#e3e3e3"
+        bracket_color = "white" if customtkinter.get_appearance_mode() == "Dark" else "black"
 
-        self.mainEntry_frame.update_idletasks()
-        frame_width = self.mainEntry_frame.winfo_width()
-        frame_height = self.mainEntry_frame.winfo_height()
+        self.mainEntry_frame.configure(fg_color=frame_bg_color)
 
-        total_width = size * (entry_width + padding)
-        total_height = size * (entry_height + padding)
+        start_x = bracket_spacing + bracket_width + padding
+        start_y = padding
 
-        start_x = (frame_width - total_width) // 2 if frame_width > total_width else 0
-        start_y = (frame_height - total_height) // 2 if frame_height > total_height else 0
+        canvas = tk.Canvas(self.mainEntry_frame, bg=frame_bg_color, highlightthickness=0, bd=0)
+        canvas.pack(fill="both", expand=True)
+
+        canvas.create_line(start_x - bracket_spacing, start_y, start_x - bracket_spacing,
+                           start_y + size * (entry_height + padding), fill=bracket_color, width=bracket_width)
+        canvas.create_line(start_x + size * (entry_width + padding) + bracket_spacing, start_y,
+                           start_x + size * (entry_width + padding) + bracket_spacing,
+                           start_y + size * (entry_height + padding), fill=bracket_color, width=bracket_width)
 
         for i in range(size):
             row_entries = []
             for j in range(size):
-                entry = customtkinter.CTkEntry(self.mainEntry_frame, width=entry_width, height=entry_height,
-                                               corner_radius=5, fg_color=bg_color_default)
+                entry = customtkinter.CTkEntry(canvas, width=entry_width, height=entry_height, corner_radius=5,
+                                               fg_color=bg_color_default)
                 entry.place(x=start_x + j * (entry_width + padding), y=start_y + i * (entry_height + padding))
                 row_entries.append(entry)
             self.matrix_entries.append(row_entries)
 
+        self.mainEntry_frame.configure(
+            width=size * (entry_width + padding) + 2 * (bracket_spacing + bracket_width + padding),
+            height=size * (entry_height + padding) + 2 * padding)
 
     def import_document(self):
         TKdnd.import_document(self, "<D>")
@@ -239,7 +248,6 @@ class DeterminantsFrame(customtkinter.CTkFrame):
                                                corner_radius=5, fg_color=bg_color, anchor='center')
                 label.grid(row=i, column=j, padx=(5, 5), pady=(5, 5), sticky="nsew")
                 label.place(x=start_x + j * (entry_width + 10), y=start_y + i * (entry_height + 10))
-
 
     def calculate_determinant(self):
         if not self.matrix_entries:
