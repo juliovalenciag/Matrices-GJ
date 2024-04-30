@@ -1,13 +1,12 @@
-from ast import List
-from fractions import Fraction
-from re import T
 
+from fractions import Fraction
 from PIL import ImageTk, Image
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox
 import customtkinter
 import os
+import numpy as np
 import modulos.drop_and_drag.drop_and_drag as TKdnd
 
 from modulos.verificador_variables.verificador import verificador_de_variables
@@ -37,7 +36,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
                 tk_image = ImageTk.PhotoImage(pil_image)
                 button = customtkinter.CTkButton(topbar_frame, image=tk_image, text=text, command=cmd,
                                                  compound="top",
-                                                 fg_color=None, hover_color="gray")
+                                                 fg_color=None, hover_color="gray",)
                 button.image = tk_image
                 button.grid(row=0, column=i, padx=10, pady=10)
             except FileNotFoundError:
@@ -103,7 +102,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
             for j in range(columns):
                 bg_color = bg_color_constant if j == columns - 1 else bg_color_default
                 entry = customtkinter.CTkEntry(canvas, width=entry_width, height=entry_height, corner_radius=5,
-                                               fg_color=bg_color)
+                                               fg_color=bg_color, font=('Arial', 30))
                 entry.place(x=start_x + j * (entry_width + padding), y=start_y + i * (entry_height + padding))
                 row_entries.append(entry)
             self.matrix_entries.append(row_entries)
@@ -154,6 +153,30 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         columns = len(self.matrix_entries[0])
 
         matrix = []
+        
+        if rows > 6 or columns > 6:
+            
+            try:
+                for row_entries in self.matrix_entries:
+                    row = []
+                    for entry in row_entries:
+                        entry_value = entry.get()
+                        if entry_value:
+                            row.append(Fraction(entry_value))
+                        else:
+                            row.append(Fraction(0))
+                    matrix.append(row)
+                matrix = np.array(matrix)
+                matrix = np.around(matrix, 5)
+                matrix = matrix.astype(float)
+                matrix = np.linalg.solve(matrix[:, :-1], matrix[:, -1])
+                self.display_result_matrix(matrix)
+                self.display_solution(matrix)
+                return
+            except np.linalg.LinAlgError:
+                tkinter.messagebox.showerror("Error",)
+                return
+        
         for row_entries in self.matrix_entries:
             row = []
             for entry in row_entries:
@@ -184,8 +207,13 @@ class GaussJordanFrame(customtkinter.CTkFrame):
                     for k in range(columns):
                         matrix[j][k] -= factor * matrix[i][k]
 
-        self.display_result_matrix(matrix)
-        self.display_solution(matrix)
+        if rows > 4 or columns > 4:        
+            self.display_result_matrix(matrix)
+            self.display_solution(matrix)
+            
+        else:
+            self.display_result_matrix(matrix)
+            self.display_solution(matrix)
 
     def display_result_matrix(self, matrix):
         for widget in self.mainResults_frame.winfo_children():
@@ -201,22 +229,79 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         total_width = columns * (entry_width + 10)
         total_height = rows * (entry_height + 10)
 
-        start_x = (self.mainResults_frame.winfo_width() - total_width) // 2
-        start_y = (self.mainResults_frame.winfo_height() - total_height) // 2
+        if rows > 5 or columns > 4:
+            new_window = customtkinter.CTkToplevel(self)
+            new_window.title("Resultado")
+            new_window.geometry("800x800")
+            new_window.grab_current()
+            new_window.focus_set()
+            new_window.attributes("-topmost", True)
+            new_window.grid_columnconfigure(0, weight=1)
+            new_window.grid_rowconfigure(0, weight=1)
+            mainResults_frame = customtkinter.CTkFrame(new_window, width=400, height=400)
+            mainResults_frame.grid(row=0, column=0, padx=(20, 0), pady=(20, 20), sticky="nsew")
+            start_x = (mainResults_frame.winfo_width() - total_width) // 2
+            start_y = (mainResults_frame.winfo_height() - total_height) // 2
 
-        start_x = max(start_x, 10)
-        start_y = max(start_y, 10)
+            start_x = max(start_x, 10)
+            start_y = max(start_y, 10)
+            entry_width = max(60, 600 // max(columns, 10))
+            entry_height = max(60, 300 // max(rows, 10))
+            padding = 10
+            bracket_width = 20
+            bracket_depth = 10
 
-        for i in range(rows):
-            self.mainResults_frame.grid_rowconfigure(i, weight=1, uniform='row')
-            for j in range(columns):
-                self.mainResults_frame.grid_columnconfigure(j, weight=1, uniform='col')
-                value = matrix[i][j]
-                label = customtkinter.CTkLabel(self.mainResults_frame, text=str(value),
-                                               width=entry_width, height=entry_height,
-                                               corner_radius=5, fg_color=bg_color, anchor='center')
-                label.grid(row=i, column=j, padx=(5, 5), pady=(5, 5), sticky="nsew")
-                label.place(x=start_x + j * (entry_width + 10), y=start_y + i * (entry_height + 10))
+            if customtkinter.get_appearance_mode() == "Dark":
+                bg_color_default = "#2C2F33"
+                bg_color_constant = "#60656b"
+                bracket_color = "white"
+                canvas_bg = "#202020"
+            else:
+                bg_color_default = "white"
+                bg_color_constant = "lightgrey"
+                bracket_color = "black"
+                canvas_bg = "#e3e3e3"
+
+            total_width = columns * (entry_width + padding)
+            total_height = rows * (entry_height + padding)
+
+            start_x = bracket_width + padding
+            start_y = padding
+            
+
+            canvas = tk.Canvas(mainResults_frame, width=total_width + 2 * bracket_width + 2 * padding,
+                            height=total_height + 2 * padding, bg=canvas_bg, highlightthickness=0)
+            canvas.pack(fill='both', expand=True)
+
+            self.draw_brackets(canvas, start_x, start_y, total_width, total_height, bracket_width, bracket_depth,
+                            bracket_color)
+            for i in range(rows):
+                mainResults_frame.grid_rowconfigure(i, weight=1, uniform='row')
+                for j in range(columns):
+                    mainResults_frame.grid_columnconfigure(j, weight=1, uniform='col')
+                    value = matrix[i][j]
+                    label = customtkinter.CTkLabel(mainResults_frame, text=str(value),
+                                                width=entry_width, height=entry_height,
+                                                corner_radius=5, fg_color=bg_color, anchor='center', font=('Arial', 24))
+                    label.place(x=start_x + j * (entry_width + 10), y=start_y + i * (entry_height + 10))
+            return
+        
+        else:
+            start_x = (self.mainResults_frame.winfo_width() - total_width) // 2
+            start_y = (self.mainResults_frame.winfo_height() - total_height) // 2
+
+            start_x = max(start_x, 10)
+            start_y = max(start_y, 10)
+            for i in range(rows):
+                self.mainResults_frame.grid_rowconfigure(i, weight=1, uniform='row')
+                for j in range(columns):
+                    self.mainResults_frame.grid_columnconfigure(j, weight=1, uniform='col')
+                    value = matrix[i][j]
+                    label = customtkinter.CTkLabel(self.mainResults_frame, text=str(value),
+                                                width=entry_width, height=entry_height,
+                                                corner_radius=5, fg_color=bg_color, anchor='center')
+                    label.grid(row=i, column=j, padx=(5, 5), pady=(5, 5), sticky="nsew")
+                    label.place(x=start_x + j * (entry_width + 10), y=start_y + i * (entry_height + 10))
 
     def display_solution(self, matrix):
         for widget in self.mainSolution_frame.winfo_children():
@@ -226,8 +311,6 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         columns = len(matrix[0])
         solution_texts = []
         error_messege = ""
-
-        filas_de_ceros = []
 
         rank = sum(1 for i in range(rows) if any(matrix[i][j] != 0 for j in range(columns - 1)))
         if rank < rows:
@@ -300,6 +383,18 @@ class GaussJordanFrame(customtkinter.CTkFrame):
             return
 
         matrix = []
+        if rows > 6:
+            inverse_matrix =  np.array(matrix)
+            try:
+                inverse_matrix = np.linalg.inv(inverse_matrix)
+                self.display_result_matrix(inverse_matrix)
+                return
+            except np.linalg.LinAlgError:
+                tkinter.messagebox.showerror("Error",
+                                             "La matriz es singular y no tiene inversa.")
+                return
+            
+            
         for i, row_entries in enumerate(self.matrix_entries):
             row = [Fraction(entry.get() if entry.get() else 0) for entry in
                    row_entries]

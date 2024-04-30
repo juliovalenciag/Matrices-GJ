@@ -1,4 +1,5 @@
 from fractions import Fraction
+from hmac import new
 
 from PIL import ImageTk, Image
 import tkinter as tk
@@ -6,6 +7,7 @@ from tkinter import ttk
 import tkinter.messagebox
 import customtkinter
 import os
+import numpy as np
 import modulos.drop_and_drag.drop_and_drag as TKdnd
 
 from matplotlib.figure import Figure
@@ -237,17 +239,39 @@ class DeterminantsFrame(customtkinter.CTkFrame):
 
         start_x = max(start_x, 10)
         start_y = max(start_y, 10)
+        
+        if rows > 5 or columns > 4:
+            new_window = customtkinter.CTkToplevel(self)
+            new_window.title("Resultado")
+            new_window.geometry("800x600")
+            new_window.grab_current()
+            new_window.focus_set()
+            mainResults_frame = customtkinter.CTkFrame(new_window)
+            mainResults_frame.grid(row=1, column=1, rowspan=3, padx=(20, 0), pady=(20, 20), sticky="nsew")
 
-        for i in range(rows):
-            self.mainResults_frame.grid_rowconfigure(i, weight=1, uniform='row')
-            for j in range(columns):
-                self.mainResults_frame.grid_columnconfigure(j, weight=1, uniform='col')
-                value = matrix[i][j]
-                label = customtkinter.CTkLabel(self.mainResults_frame, text=str(value),
-                                               width=entry_width, height=entry_height,
-                                               corner_radius=5, fg_color=bg_color, anchor='center')
-                label.grid(row=i, column=j, padx=(5, 5), pady=(5, 5), sticky="nsew")
-                label.place(x=start_x + j * (entry_width + 10), y=start_y + i * (entry_height + 10))
+            for i in range(rows):
+                mainResults_frame.grid_rowconfigure(i, weight=1, uniform='row')
+                for j in range(columns):
+                    mainResults_frame.grid_columnconfigure(j, weight=1, uniform='col')
+                    value = matrix[i][j]
+                    label = customtkinter.CTkLabel(mainResults_frame, text=str(value),
+                                                width=entry_width, height=entry_height,
+                                                corner_radius=5, fg_color=bg_color, anchor='center')
+                    label.grid(row=i, column=j, padx=(5, 5), pady=(5, 5), sticky="nsew")
+                    label.place(x=start_x + j * (entry_width + 10), y=start_y + i * (entry_height + 10))
+            return
+        
+        else:
+            for i in range(rows):
+                self.mainResults_frame.grid_rowconfigure(i, weight=1, uniform='row')
+                for j in range(columns):
+                    self.mainResults_frame.grid_columnconfigure(j, weight=1, uniform='col')
+                    value = matrix[i][j]
+                    label = customtkinter.CTkLabel(self.mainResults_frame, text=str(value),
+                                                width=entry_width, height=entry_height,
+                                                corner_radius=5, fg_color=bg_color, anchor='center')
+                    label.grid(row=i, column=j, padx=(5, 5), pady=(5, 5), sticky="nsew")
+                    label.place(x=start_x + j * (entry_width + 10), y=start_y + i * (entry_height + 10))
 
     def calculate_determinant(self):
         if not self.matrix_entries:
@@ -261,6 +285,16 @@ class DeterminantsFrame(customtkinter.CTkFrame):
             matrix.append(row)
 
         determinant = 1
+        
+        if size > 6:
+            try:
+                determinant =np.linalg.det(matrix)
+                return
+            except np.linalg.LinAlgError:
+                tkinter.messagebox.showerror("Error", "Algo salio mal y sepa que fue.")
+                return
+                
+                
         for i in range(size):
             if matrix[i][i] == 0:  # Buscar un pivot no cero en la columna i
                 for k in range(i + 1, size):
