@@ -36,7 +36,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
                 tk_image = ImageTk.PhotoImage(pil_image)
                 button = customtkinter.CTkButton(topbar_frame, image=tk_image, text=text, command=cmd,
                                                  compound="top",
-                                                 fg_color=None, hover_color="gray",)
+                                                 fg_color=None, hover_color="gray", font=('Arial', 16))
                 button.image = tk_image
                 button.grid(row=0, column=i, padx=10, pady=10)
             except FileNotFoundError:
@@ -102,7 +102,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
             for j in range(columns):
                 bg_color = bg_color_constant if j == columns - 1 else bg_color_default
                 entry = customtkinter.CTkEntry(canvas, width=entry_width, height=entry_height, corner_radius=5,
-                                               fg_color=bg_color, font=('Arial', 30))
+                                               fg_color=bg_color, font=('Arial', 24))
                 entry.place(x=start_x + j * (entry_width + padding), y=start_y + i * (entry_height + padding))
                 row_entries.append(entry)
             self.matrix_entries.append(row_entries)
@@ -280,7 +280,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
                 for j in range(columns):
                     mainResults_frame.grid_columnconfigure(j, weight=1, uniform='col')
                     value = matrix[i][j]
-                    label = customtkinter.CTkLabel(mainResults_frame, text=str(value),
+                    label = customtkinter.CTkLabel(mainResults_frame, text=f'{float(value):.{3}}',
                                                 width=entry_width, height=entry_height,
                                                 corner_radius=5, fg_color=bg_color, anchor='center', font=('Arial', 24))
                     label.place(x=start_x + j * (entry_width + 10), y=start_y + i * (entry_height + 10))
@@ -343,7 +343,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
 
         if error_messege == "Sistema inconsistente. No hay solución.\n":
             print(error_messege)
-            label = customtkinter.CTkLabel(self.mainSolution_frame, text=error_messege, anchor="w", justify=tk.LEFT)
+            label = customtkinter.CTkLabel(self.mainSolution_frame, text=error_messege, anchor="w", justify=tk.LEFT, font=('Arial', 20))
             label.grid(sticky="nsew", padx=20, pady=20)
             return
 
@@ -370,7 +370,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
 
         print(solution_text)
 
-        label = customtkinter.CTkLabel(self.mainSolution_frame, text=solution_text, anchor="w", justify=tk.LEFT)
+        label = customtkinter.CTkLabel(self.mainSolution_frame, text=solution_text, anchor="w", justify=tk.LEFT, font=('Arial', 20))
         label.grid(sticky="nsew", padx=20, pady=20)
 
     def calculate_inverse(self):
