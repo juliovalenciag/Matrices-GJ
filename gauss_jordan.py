@@ -45,17 +45,44 @@ class GaussJordanFrame(customtkinter.CTkFrame):
     def configure_mainContent(self):
         self.mainEntry_frame = customtkinter.CTkFrame(self, fg_color=None)
         self.mainEntry_frame.grid(row=1, column=1, rowspan=3, padx=(20, 0), pady=(20, 20), sticky="nsew")
-        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure(1, weight=3)
         self.mainEntry_frame.update_idletasks()
+        self.grid_rowconfigure(1, weight=1)
+
         self.mainSolution_frame = customtkinter.CTkFrame(self)
-        self.mainSolution_frame.grid(row=1, column=2, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        self.mainSolution_frame.grid(row=1, column=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
         self.grid_columnconfigure(2, weight=1)
 
         self.mainResults_frame = customtkinter.CTkFrame(self)
-        self.mainResults_frame.grid(row=3, column=2, padx=(20, 20), pady=(20, 20), sticky="nsew")
-        self.grid_columnconfigure(2, weight=1)
+        self.mainResults_frame.grid(row=2, column=2, padx=(20, 20), pady=(0, 20), sticky="nsew")
+        self.grid_columnconfigure(2, weight=2)
+        self.grid_rowconfigure(2, weight=1)
 
-        self.grid_rowconfigure(3, weight=1)
+        self.setup_scrollbars()
+
+    def setup_scrollbars(self):
+        self.results_canvas = tk.Canvas(self.mainResults_frame, highlightthickness=0)
+        self.v_scroll = ttk.Scrollbar(self.mainResults_frame, orient="vertical", command=self.results_canvas.yview)
+        self.h_scroll = ttk.Scrollbar(self.mainResults_frame, orient="horizontal", command=self.results_canvas.xview)
+        self.results_canvas.configure(yscrollcommand=self.v_scroll.set, xscrollcommand=self.h_scroll.set)
+
+        self.v_scroll.pack(side="right", fill="y")
+        self.h_scroll.pack(side="bottom", fill="x")
+        self.results_canvas.pack(side="left", fill="both", expand=True)
+
+        self.results_frame = tk.Frame(self.results_canvas)
+        window_id = self.results_canvas.create_window((0, 0), window=self.results_frame, anchor='nw')
+        self.results_frame.bind("<Configure>", lambda e: self.update_canvas_window(e, window_id))
+
+    def update_canvas_window(self, event, window_id):
+        canvas_width = max(self.results_frame.winfo_reqwidth(), event.width)
+        self.results_canvas.itemconfig(window_id, width=canvas_width)
+        self.results_canvas.configure(scrollregion=self.results_canvas.bbox("all"))
+
+    def on_results_frame_resize(self, event):
+        new_width = event.width - self.v_scroll.winfo_width()
+        new_height = event.height - self.h_scroll.winfo_height()
+        self.results_canvas.config(width=new_width, height=new_height)
 
     def update_matrix_view(self):
         self.create_matrix_entries(3, 4)
@@ -216,7 +243,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
             self.display_solution(matrix)
 
     def display_result_matrix(self, matrix):
-        for widget in self.mainResults_frame.winfo_children():
+        for widget in self.results_frame.winfo_children():
             widget.destroy()
 
         rows = len(matrix)
@@ -224,84 +251,18 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         entry_width = 75
         entry_height = 50
 
-        bg_color = "#2C2F33" if customtkinter.get_appearance_mode() == "Dark" else "white"
+        bg_color_constant = "#60656b" if customtkinter.get_appearance_mode() == "Dark" else "lightgrey"
+        bg_color_default = "#2C2F33" if customtkinter.get_appearance_mode() == "Dark" else "white"
 
-        total_width = columns * (entry_width + 10)
-        total_height = rows * (entry_height + 10)
-
-        if rows > 5 or columns > 4:
-            new_window = customtkinter.CTkToplevel(self)
-            new_window.title("Resultado")
-            new_window.geometry("800x800")
-            new_window.grab_current()
-            new_window.focus_set()
-            new_window.attributes("-topmost", True)
-            new_window.grid_columnconfigure(0, weight=1)
-            new_window.grid_rowconfigure(0, weight=1)
-            mainResults_frame = customtkinter.CTkFrame(new_window, width=400, height=400)
-            mainResults_frame.grid(row=0, column=0, padx=(20, 0), pady=(20, 20), sticky="nsew")
-            start_x = (mainResults_frame.winfo_width() - total_width) // 2
-            start_y = (mainResults_frame.winfo_height() - total_height) // 2
-
-            start_x = max(start_x, 10)
-            start_y = max(start_y, 10)
-            entry_width = max(60, 600 // max(columns, 10))
-            entry_height = max(60, 300 // max(rows, 10))
-            padding = 10
-            bracket_width = 20
-            bracket_depth = 10
-
-            if customtkinter.get_appearance_mode() == "Dark":
-                bg_color_default = "#2C2F33"
-                bg_color_constant = "#60656b"
-                bracket_color = "white"
-                canvas_bg = "#202020"
-            else:
-                bg_color_default = "white"
-                bg_color_constant = "lightgrey"
-                bracket_color = "black"
-                canvas_bg = "#e3e3e3"
-
-            total_width = columns * (entry_width + padding)
-            total_height = rows * (entry_height + padding)
-
-            start_x = bracket_width + padding
-            start_y = padding
-            
-
-            canvas = tk.Canvas(mainResults_frame, width=total_width + 2 * bracket_width + 2 * padding,
-                            height=total_height + 2 * padding, bg=canvas_bg, highlightthickness=0)
-            canvas.pack(fill='both', expand=True)
-
-            self.draw_brackets(canvas, start_x, start_y, total_width, total_height, bracket_width, bracket_depth,
-                            bracket_color)
-            for i in range(rows):
-                mainResults_frame.grid_rowconfigure(i, weight=1, uniform='row')
-                for j in range(columns):
-                    mainResults_frame.grid_columnconfigure(j, weight=1, uniform='col')
-                    value = matrix[i][j]
-                    label = customtkinter.CTkLabel(mainResults_frame, text=f'{float(value):.{3}}',
-                                                width=entry_width, height=entry_height,
-                                                corner_radius=5, fg_color=bg_color, anchor='center', font=('Arial', 24))
-                    label.place(x=start_x + j * (entry_width + 10), y=start_y + i * (entry_height + 10))
-            return
-        
-        else:
-            start_x = (self.mainResults_frame.winfo_width() - total_width) // 2
-            start_y = (self.mainResults_frame.winfo_height() - total_height) // 2
-
-            start_x = max(start_x, 10)
-            start_y = max(start_y, 10)
-            for i in range(rows):
-                self.mainResults_frame.grid_rowconfigure(i, weight=1, uniform='row')
-                for j in range(columns):
-                    self.mainResults_frame.grid_columnconfigure(j, weight=1, uniform='col')
-                    value = matrix[i][j]
-                    label = customtkinter.CTkLabel(self.mainResults_frame, text=str(value),
-                                                width=entry_width, height=entry_height,
-                                                corner_radius=5, fg_color=bg_color, anchor='center')
-                    label.grid(row=i, column=j, padx=(5, 5), pady=(5, 5), sticky="nsew")
-                    label.place(x=start_x + j * (entry_width + 10), y=start_y + i * (entry_height + 10))
+        for i in range(rows):
+            for j in range(columns):
+                value = matrix[i][j]
+                bg_color = bg_color_constant if j == columns - 1 else bg_color_default
+                label = customtkinter.CTkLabel(self.results_frame, text=f'{float(value):.{3}}',
+                                            width=entry_width, height=entry_height,
+                                            corner_radius=5, fg_color=bg_color, anchor='center', font=('Arial', 24))
+        self.results_frame.update_idletasks()
+        self.results_canvas.configure(scrollregion=self.results_canvas.bbox("all"))
 
     def display_solution(self, matrix):
         for widget in self.mainSolution_frame.winfo_children():
@@ -519,7 +480,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
     def clear_all(self):
         self.create_matrix_entries(3, 4)
 
-        for widget in self.mainResults_frame.winfo_children():
+        for widget in self.results_frame.winfo_children():
             widget.destroy()
 
         for widget in self.mainSolution_frame.winfo_children():
