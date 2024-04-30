@@ -72,12 +72,13 @@ class GaussJordanFrame(customtkinter.CTkFrame):
         self.results_canvas.pack(side="left", fill="both", expand=True)
 
         self.results_frame = tk.Frame(self.results_canvas)
-        self.results_canvas.create_window((0, 0), window=self.results_frame, anchor='nw',
-                                          width=self.results_canvas.winfo_reqwidth())
+        window_id = self.results_canvas.create_window((0, 0), window=self.results_frame, anchor='nw')
+        self.results_frame.bind("<Configure>", lambda e: self.update_canvas_window(e, window_id))
 
-        self.results_frame.bind("<Configure>",
-                                lambda e: self.results_canvas.configure(scrollregion=self.results_canvas.bbox("all")))
-        self.mainResults_frame.bind("<Configure>", self.on_results_frame_resize)
+    def update_canvas_window(self, event, window_id):
+        canvas_width = max(self.results_frame.winfo_reqwidth(), event.width)
+        self.results_canvas.itemconfig(window_id, width=canvas_width)
+        self.results_canvas.configure(scrollregion=self.results_canvas.bbox("all"))
 
     def on_results_frame_resize(self, event):
         new_width = event.width - self.v_scroll.winfo_width()
