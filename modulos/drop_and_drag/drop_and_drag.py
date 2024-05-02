@@ -1,7 +1,6 @@
 # modulo encargado de desplegar una ventana para el drop and drag
 from fractions import Fraction
 import os
-from turtle import onclick
 from PIL import ImageTk, Image
 from tkinter import BOTTOM, END, StringVar, filedialog, TOP
 import tkinter.messagebox
@@ -18,7 +17,13 @@ class Window_drag_and_drop(customtkinter.CTkToplevel, TkinterDnD.DnDWrapper):
 def import_document(secondary_window, page:str = ""):
     def get_path(event):
         nameVarString.set(event.data)
-        file_name = os.path.normpath(event.data[1:-1])
+        file_name = None  # Inicializa la variable del nombre del archivo
+        if event.data.endswith(".txt"): 
+            file_name = os.path.normpath(event.data)
+            
+        else:
+            file_name = os.path.normpath(event.data[1:-1])
+            
         print(file_name)
         print(nameVarString.get()[1:-1])
         print(nameVarString.get())
