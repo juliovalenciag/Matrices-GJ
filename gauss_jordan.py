@@ -261,6 +261,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
                 label = customtkinter.CTkLabel(self.results_frame, text=f'{float(value):.{3}}',
                                             width=entry_width, height=entry_height,
                                             corner_radius=5, fg_color=bg_color, anchor='center', font=('Arial', 24))
+                label.grid(row=i, column=j, padx=5, pady=5, sticky="nsew")
         self.results_frame.update_idletasks()
         self.results_canvas.configure(scrollregion=self.results_canvas.bbox("all"))
 
@@ -337,7 +338,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
     def calculate_inverse(self):
         rows = len(self.matrix_entries)
         columns = len(self.matrix_entries[0])
-
+        print ("inversa")
         if rows != columns:
             tkinter.messagebox.showerror("Error",
                                          "La matriz debe ser cuadrada (sin contar la columna de términos constantes) para calcular la inversa.")
@@ -348,6 +349,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
             inverse_matrix =  np.array(matrix)
             try:
                 inverse_matrix = np.linalg.inv(inverse_matrix)
+                print(inverse_matrix)
                 self.display_result_matrix(inverse_matrix)
                 return
             except np.linalg.LinAlgError:
@@ -355,7 +357,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
                                              "La matriz es singular y no tiene inversa.")
                 return
             
-            
+        print("aqui")    
         for i, row_entries in enumerate(self.matrix_entries):
             row = [Fraction(entry.get() if entry.get() else 0) for entry in
                    row_entries]
@@ -382,6 +384,7 @@ class GaussJordanFrame(customtkinter.CTkFrame):
                     matrix[j] = [matrix[j][k] - factor * matrix[i][k] for k in range(2 * n)]
 
         inverse_matrix = [row[n:] for row in matrix]
+        print(inverse_matrix)
 
         self.display_result_matrix(inverse_matrix)
 

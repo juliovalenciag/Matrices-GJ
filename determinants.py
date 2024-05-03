@@ -240,6 +240,84 @@ class DeterminantsFrame(customtkinter.CTkFrame):
         start_x = max(start_x, 10)
         start_y = max(start_y, 10)
         
+        total_height = rows * (entry_height + 10)
+
+        if rows > 5 or columns > 4:
+            new_window = customtkinter.CTkToplevel(self)
+            new_window.title("Resultado")
+            new_window.geometry("800x800")
+            new_window.grab_current()
+            new_window.focus_set()
+            new_window.attributes("-topmost", True)
+            new_window.grid_columnconfigure(0, weight=1)
+            new_window.grid_rowconfigure(0, weight=1)
+            mainResults_frame = customtkinter.CTkFrame(new_window, width=400, height=400)
+            mainResults_frame.grid(row=0, column=0, padx=(20, 0), pady=(20, 20), sticky="nsew")
+            start_x = (mainResults_frame.winfo_width() - total_width) // 2
+            start_y = (mainResults_frame.winfo_height() - total_height) // 2
+
+            start_x = max(start_x, 10)
+            start_y = max(start_y, 10)
+            entry_width = max(60, 600 // max(columns, 10))
+            entry_height = max(60, 300 // max(rows, 10))
+            padding = 10
+            bracket_width = 20
+            bracket_depth = 10
+
+            if customtkinter.get_appearance_mode() == "Dark":
+                bg_color_default = "#2C2F33"
+                bg_color_constant = "#60656b"
+                bracket_color = "white"
+                canvas_bg = "#202020"
+            else:
+                bg_color_default = "white"
+                bg_color_constant = "lightgrey"
+                bracket_color = "black"
+                canvas_bg = "#e3e3e3"
+
+            total_width = columns * (entry_width + padding)
+            total_height = rows * (entry_height + padding)
+
+            start_x = bracket_width + padding
+            start_y = padding
+            
+
+            canvas = tk.Canvas(mainResults_frame, width=total_width + 2 * bracket_width + 2 * padding,
+                            height=total_height + 2 * padding, bg=canvas_bg, highlightthickness=0)
+            canvas.pack(fill='both', expand=True)
+
+            padding = 5
+            bracket_width = 2
+            bracket_spacing = 10
+            size = rows
+            canvas.create_line(start_x - bracket_spacing, start_y, start_x - bracket_spacing,
+                            start_y + size * (entry_height + padding), fill=bracket_color, width=bracket_width)
+            canvas.create_line(start_x + size * (entry_width + padding) + bracket_spacing, start_y,
+                            start_x + size * (entry_width + padding) + bracket_spacing,
+                            start_y + size * (entry_height + padding), fill=bracket_color, width=bracket_width)
+            for i in range(rows):
+                mainResults_frame.grid_rowconfigure(i, weight=1, uniform='row')
+                for j in range(columns):
+                    mainResults_frame.grid_columnconfigure(j, weight=1, uniform='col')
+                    value = matrix[i][j]
+                    label = customtkinter.CTkLabel(mainResults_frame, text=f'{float(value):.{2}}',
+                                                width=entry_width, height=entry_height,
+                                                corner_radius=5, fg_color=bg_color, anchor='center', font=('Arial', 20))
+                    label.place(x=start_x + j * (entry_width + 10), y=start_y + i * (entry_height + 10))
+            return
+        
+        else:
+            for i in range(rows):
+                self.mainResults_frame.grid_rowconfigure(i, weight=1, uniform='row')
+                for j in range(columns):
+                    self.mainResults_frame.grid_columnconfigure(j, weight=1, uniform='col')
+                    value = matrix[i][j]
+                    label = customtkinter.CTkLabel(self.mainResults_frame, text=str(value),
+                                                width=entry_width, height=entry_height,
+                                                corner_radius=5, fg_color=bg_color, anchor='center')
+                    label.grid(row=i, column=j, padx=(5, 5), pady=(5, 5), sticky="nsew")
+                    label.place(x=start_x + j * (entry_width + 10), y=start_y + i * (entry_height + 10))
+            
         if rows > 5 or columns > 4:
             new_window = customtkinter.CTkToplevel(self)
             new_window.title("Resultado")
@@ -315,6 +393,8 @@ class DeterminantsFrame(customtkinter.CTkFrame):
 
         self.label_determinant.configure(
             text=f"Determinante: {determinant}")
+        
+    
 
 if __name__ == "__main__":
     root = customtkinter.CTk()
