@@ -5,9 +5,9 @@ import customtkinter
 from PIL import ImageTk, Image
 from fractions import Fraction
 
-from gauss_jordan import GaussJordanFrame
-from determinants import DeterminantsFrame
-from operations import OperationsFrame
+from deprecated_modules.gauss_jordan import GaussJordanFrame
+from deprecated_modules.determinants import DeterminantsFrame
+from deprecated_modules.operations import OperationsFrame
 
 customtkinter.set_appearance_mode("Dark")
 customtkinter.set_default_color_theme("dark-blue")

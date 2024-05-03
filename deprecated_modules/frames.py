@@ -4,7 +4,7 @@ import customtkinter
 from PIL import ImageTk, Image
 from fractions import Fraction
 
-from gauss_jordan import GaussJordanFrame
+from deprecated_modules.gauss_jordan import GaussJordanFrame
 
 customtkinter.set_appearance_mode("Dark")
 customtkinter.set_default_color_theme("dark-blue")

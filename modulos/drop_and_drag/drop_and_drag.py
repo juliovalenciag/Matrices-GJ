@@ -1,20 +1,46 @@
+"""
+
+
 # modulo encargado de desplegar una ventana para el drop and drag
+#funciones:
+#   -import_document(secondary_window, page:str = "") -> None
+#   -export_document(secondary_window) -> None
+#   -import_explore(secondary_window, root: customtkinter.CTkToplevel) -> None
+
+
+"""
+
+#libreria para manejar fracciones
 from fractions import Fraction
+
+#libreria para manejar archivos
 import os
+
+#libreria para manejar imagenes
 from PIL import ImageTk, Image
+
+#libreria para manejar tkinter customtkinter
 from tkinter import BOTTOM, END, StringVar, filedialog, TOP
 import tkinter.messagebox
 from tkinterdnd2 import TkinterDnD, DND_ALL
 import customtkinter
 
-
+#protototipo de la clase para una ventana emergente
 class Window_drag_and_drop(customtkinter.CTkToplevel, TkinterDnD.DnDWrapper):
+    """
+    Clase que hereda de la clase CTkToplevel y DnDWrapper para crear una ventana emergente con soporte para arrastrar y soltar archivos.
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.TkdndVersion = TkinterDnD._require(self)
 
-
-def import_document(secondary_window, page:str = ""):
+#funcion para importar un documento
+def import_document(secondary_window, page:str = "") -> None:
+    """
+    Abre una ventana para seleccionar y arrastrar un archivo de texto (.txt) y lo importa en la interfaz gráfica.
+    """
+    
+    #función interna para obtener la ruta del archivo y crear la matriz de importación
     def get_path(event):
         nameVarString.set(event.data)
         file_name = None  # Inicializa la variable del nombre del archivo
@@ -99,25 +125,33 @@ def import_document(secondary_window, page:str = ""):
 
     nameVarString = StringVar()
 
+    # Crea un widget de entrada para el DND
     entryWidget = customtkinter.CTkEntry(
         root, width=550, height=550, bg_color="white", fg_color="white", border_color="black",)
     entryWidget.pack(side=TOP, padx=5, pady=5)
 
+    # Crea un widget de etiqueta para indicar lo que se debe hacer
     background_Label = customtkinter.CTkLabel(
         root, text="Pon tu archivo en al zona blanca")
     background_Label.place(x=170, y=400)
 
+    # Crea un widget para habilitar la busquedad de archivo en el sistema
     button1 = customtkinter.CTkButton(root, width=80, height=30, text="Explorar archivos", command=lambda: import_explore(
         secondary_window, root), bg_color="blue", fg_color="white", text_color="black", hover_color="grey")
     button1.place(x=200, y=330)
 
+    #habilitar el drop and drag
     entryWidget.drop_target_register(DND_ALL)
     entryWidget.dnd_bind("<<Drop>>", get_path)
 
     print("Import document")
 
-
-def export_document(secondary_window):
+###############################################
+#funcion para exportar un documento
+def export_document(secondary_window) -> None:
+    """
+    Exporta la matriz de entradas en la interfaz gráfica a un archivo de texto (.txt).
+    """
     # Abrir una ventana del explorador de archivos para que el usuario seleccione la ubicación y el nombre del archivo
     filepath = filedialog.asksaveasfilename(defaultextension=".txt")
 
@@ -146,9 +180,11 @@ def export_document(secondary_window):
             tkinter.messagebox.showerror(
                 "Error", f"No se pudo exportar la matriz: {e}")
 
-
-def import_explore(secondary_window, root: customtkinter.CTkToplevel):
-
+#funcion para importar un archivo explorando el sistema
+def import_explore(secondary_window, root: customtkinter.CTkToplevel) -> None:
+    """
+    Abre un explorador de archivos para seleccionar un archivo de texto (.txt) y lo importa en la interfaz gráfica.
+    """
     root.withdraw()  # Oculta la ventana principal para que la ventana de selección de archivo sea la ventana principal
     file_name = filedialog.askopenfilename(
         parent=root, filetypes=[("Text files", "*.txt")])
