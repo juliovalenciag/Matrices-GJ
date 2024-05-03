@@ -37,7 +37,7 @@ def import_document(secondary_window, page:str = ""):
                         matriz.append(fila)  # Agrega la fila a la matriz
 
                 # Elimina todas las entradas existentes en la interfaz gráfica
-                secondary_window.clear_all()
+                secondary_window.eliminate()
 
                 #crear matriz para gauss-jordan 
                 if page == "<GJ>":
@@ -163,7 +163,7 @@ def import_explore(secondary_window, root: customtkinter.CTkToplevel):
                     matriz.append(fila)  # Agrega la fila a la matriz
 
             # Elimina todas las entradas existentes en la interfaz gráfica
-            secondary_window.clear_all()
+            secondary_window.eliminate()
 
             # Crea nuevas entradas en la interfaz gráfica para la nueva matriz importada
             filas_importadas = len(matriz)

@@ -7,6 +7,7 @@ from PIL import ImageTk, Image
 from tkinter import ttk
 import numpy as np
 import modulos.drop_and_drag.drop_and_drag as TKdnd
+from modulos.verificador_variables.verificador import verificador_de_variables
 
 customtkinter.set_appearance_mode("Dark")  # Configura el tema oscuro
 customtkinter.set_default_color_theme("dark-blue")  # Configura el tema de color
@@ -54,7 +55,7 @@ class App(customtkinter.CTk):
 
         functionButtons_info =[("gj1.png", "Gauss-Jordan", self.gauss_jordan),
                                ("determinante.png", "Determinante", self.calculate_determinant),
-                               ("inversa.png", "Inversa", self.toolbar_button_click),
+                               ("inversa.png", "Inversa", self.calculate_inverse),
         ]
 
         for i, (img_name, text, cmd) in enumerate(functionButtons_info):
@@ -103,12 +104,12 @@ class App(customtkinter.CTk):
         self.h_scroll.pack(side="bottom", fill="x")
         self.results_canvas.pack(side="left", fill="both", expand=True)
 
-        self.results_frame = tk.Frame(self.results_canvas)
-        window_id = self.results_canvas.create_window((0, 0), window=self.results_frame, anchor='nw')
-        self.results_frame.bind("<Configure>", lambda e: self.update_canvas_window(e, window_id))
+        self.results_scroll = tk.Frame(self.results_canvas)
+        window_id = self.results_canvas.create_window((0, 0), window=self.results_scroll, anchor='nw')
+        self.results_scroll.bind("<Configure>", lambda e: self.update_canvas_window(e, window_id))
         
     def update_canvas_window(self, event, window_id):
-        canvas_width = max(self.results_frame.winfo_reqwidth(), event.width)
+        canvas_width = max(self.results_scroll.winfo_reqwidth(), event.width)
         self.results_canvas.itemconfig(window_id, width=canvas_width)
         self.results_canvas.configure(scrollregion=self.results_canvas.bbox("all"))
 
@@ -311,6 +312,12 @@ class App(customtkinter.CTk):
             return
 
         size = len(self.matrix_entries)
+        columns = len(self.matrix_entries[0])
+        if size != columns:
+            tkinter.messagebox.showerror("Error",
+                                         "La matriz debe ser cuadrada (sin contar la columna de términos constantes) para calcular la inversa.")
+            return
+        
         matrix = []
         for row_entries in self.matrix_entries:
             row = [Fraction(entry.get() if entry.get() else '0') for entry in row_entries]
@@ -345,10 +352,9 @@ class App(customtkinter.CTk):
                 for k in range(size):
                     matrix[j][k] -= factor * matrix[i][k]
 
-        self.label_determinant = customtkinter.CTkLabel(self.result_frame, text="Determinante:",
-                                                        font=('Arial', 30))
-        self.label_determinant.configure(
-            text=f"Determinante: {determinant}")
+        label = customtkinter.CTkLabel(self.result_frame, text=f"Determinante: {determinant}", anchor="w", justify=tk.LEFT, font=('Arial', 20), text_color="white")
+        label.grid(sticky="nsew", padx=20, pady=20)
+        
         
     def gauss_jordan(self):
         rows = len(self.matrix_entries)
@@ -418,9 +424,12 @@ class App(customtkinter.CTk):
             self.display_solution(matrix)
             
     def calculate_inverse(self):
+            
+        for widget in self.result_frame.winfo_children():
+            widget.destroy()
+
         rows = len(self.matrix_entries)
         columns = len(self.matrix_entries[0])
-        print ("inversa")
         if rows != columns:
             tkinter.messagebox.showerror("Error",
                                          "La matriz debe ser cuadrada (sin contar la columna de términos constantes) para calcular la inversa.")
@@ -470,20 +479,118 @@ class App(customtkinter.CTk):
 
         self.display_result_matrix(inverse_matrix)
         
+    def display_result_matrix(self, matrix):
+        for widget in self.results_scroll.winfo_children():
+            widget.destroy()
+
+        rows = len(matrix)
+        columns = max(len(row) for row in matrix) if matrix else 0
+        entry_width = 75
+        entry_height = 50
+
+        bg_color_constant = "#60656b" if customtkinter.get_appearance_mode() == "Dark" else "lightgrey"
+        bg_color_default = "#2C2F33" if customtkinter.get_appearance_mode() == "Dark" else "white"
+
+        for i in range(rows):
+            for j in range(columns):
+                value = matrix[i][j]
+                bg_color = bg_color_constant if j == columns - 1 else bg_color_default
+                label = customtkinter.CTkLabel(self.results_scroll, text=f'{float(value):.{3}}',
+                                            width=entry_width, height=entry_height,
+                                            corner_radius=5, fg_color=bg_color, anchor='center', font=('Arial', 24))
+                label.grid(row=i, column=j, padx=5, pady=5, sticky="nsew")
+        self.results_scroll.update_idletasks()
+        self.results_canvas.configure(scrollregion=self.results_canvas.bbox("all"))
+        
+        
+    def display_solution(self, matrix):
+        for widget in self.result_frame.winfo_children():
+            widget.destroy()
+
+        rows = len(matrix)
+        columns = len(matrix[0])
+        solution_texts = []
+        error_messege = ""
+
+        rank = sum(1 for i in range(rows) if any(matrix[i][j] != 0 for j in range(columns - 1)))
+        if rank < rows:
+            error_messege = "El sistema tiene infinitas soluciones debido a las filas cero.\n"
+
+        terminos_sin = []
+        for i in range(rows):
+            if all(matrix[i][j] == 0 for j in range(columns - 1)):
+                if matrix[i][-1] != 0:
+                    error_messege = "Sistema inconsistente. No hay solución.\n"
+                    break
+                else:
+                    continue
+            else:
+                terminos_sin.append([])
+                terms = []
+                for j in range(columns - 1):
+                    if matrix[i][j] != 0:
+                        coefficient = str(matrix[i][j])
+                        if coefficient == "1":
+                            terms.append(f"x_{j + 1}")
+                            terminos_sin[i].append(f"x_{j + 1}")
+                            continue
+
+                        terms.append(f"{coefficient}x_{j + 1}")
+                constant = matrix[i][-1]
+                equation = terms[0] + " = " + " - ".join(terms[1:]) + (f"{constant}" if len(terms) == 1 else (
+                    " + " + str(constant) if constant > 0 else ("" if constant == 0 else str(constant))))
+                solution_texts.append(equation)
+
+        if error_messege == "Sistema inconsistente. No hay solución.\n":
+            print(error_messege)
+            self.matrix_frame.update_idletasks()
+            label = customtkinter.CTkLabel(self.result_frame, text=error_messege, anchor="w", justify=tk.LEFT, font=('Arial', 20))
+            label.grid(sticky="nsew", padx=20, pady=20)
+            return
+
+        soluciones_infinitas, variables = verificador_de_variables(terminos_sin)
+        solution_text = error_messege
+        variables.sort()
+        solution_text += "{ " + "( " + ",".join(variables) + " ) |" + "\n"
+        solution_text += "\n".join(solution_texts)
+
+        if not solution_texts:
+            solution_text = "El sistema tiene infinitas soluciones (sistema indeterminado)."
+
+        if soluciones_infinitas:
+            # solution_text += "\n Con las variables: " + ", ".join(soluciones_infinitas) + u' \u2208 ' + u'\u211d'
+            # solution_text += "\n Con las variables: " + ", ".join(soluciones_infinitas) + " ∈ R"
+            if len(soluciones_infinitas) == 1:
+                solution_text += "\n & " + soluciones_infinitas[0] + " }"
+            elif len(soluciones_infinitas) == 2:
+                solution_text += ",\n" + soluciones_infinitas[0] + " & " + soluciones_infinitas[1] + " }"
+            else:
+                solution_text += ",\n" + ", ".join(soluciones_infinitas[0:-2]) + "&" + soluciones_infinitas[-1] + " }"
+        else:
+            solution_text += " }"
+
+        print(solution_text)
+        self.matrix_frame.update_idletasks()
+        label = customtkinter.CTkLabel(self.result_frame, text=solution_text, anchor="w", justify=tk.LEFT, font=('Arial', 20))
+        label.grid(sticky="nsew", padx=20, pady=20)
+        
     def import_document(self):
         TKdnd.import_document(self, "<GJ>")
+        self.matrix_frame.update_idletasks()
     
     def export_document(self):
         TKdnd.export_document(self)
+        self.matrix_frame.update_idletasks()
         
     def eliminate(self):
-        for widget in self.results_frame.winfo_children():
-            widget.destroy()
-
         for widget in self.matrix_frame.winfo_children():
             widget.destroy()
             
-        self.label_determinant.configure(text="Determinante:")
+        for widget in self.results_scroll.winfo_children():
+            widget.destroy()
+            
+        for widget in self.result_frame.winfo_children():
+            widget.destroy()
 
     def run(self):
         self.mainloop()
