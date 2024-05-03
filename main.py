@@ -63,7 +63,7 @@ class App(customtkinter.CTk):
                 image_path = os.path.join("images", img_name)
                 pil_image = Image.open(image_path).resize((50, 50))
                 tk_image = ImageTk.PhotoImage(pil_image)
-                button = customtkinter.CTkButton(midbar_frame, image=tk_image, text=text, command=cmd, compound="top", fg_color=None, hover_color="gray")
+                button = customtkinter.CTkButton(midbar_frame, image=tk_image, text=text, command=cmd, compound="top", fg_color=None, hover_color="gray", font=('Arial', 24))
                 button.image = tk_image
                 button.grid(row=i, column=0, padx=10, pady=10)
             except FileNotFoundError:
@@ -85,13 +85,13 @@ class App(customtkinter.CTk):
                 tk_image = ImageTk.PhotoImage(pil_image)
                 button = customtkinter.CTkButton(topbar_frame, image=tk_image, text=text, command=cmd,
                                                  compound="top",
-                                                 fg_color=None, hover_color="gray")
+                                                 fg_color=None, hover_color="gray", font=('Arial', 24))
                 button.image = tk_image
                 button.grid(row=0, column=i, padx=10, pady=10)
             except FileNotFoundError:
                 print(f"Error: El archivo {img_name} no se encontró en la carpeta 'images'.")
 
-        self.appearance_switch = customtkinter.CTkSwitch(topbar_frame, text="Cambiar tema", command=self.toggle_theme)
+        self.appearance_switch = customtkinter.CTkSwitch(topbar_frame, text="Cambiar tema", command=self.toggle_theme, font=('Arial', 24))
         self.appearance_switch.grid(row=0, column=8, padx=10, pady=10, sticky="e")
         
     def setup_scrollbars(self):
