@@ -91,6 +91,9 @@ class App(customtkinter.CTk):
         self.configure_midbar()
 
     def configure_grid_layout(self):
+        """
+        funcion que configura el layout grid
+        """
         self.grid_columnconfigure(0, weight=3)
         self.grid_columnconfigure(1, weight=0, minsize=120)
         self.grid_columnconfigure(2, weight=2)
@@ -101,6 +104,10 @@ class App(customtkinter.CTk):
         self.grid_rowconfigure(4, weight=0)
 
     def create_main_content(self):
+        """
+        crea los frame directores de las zonas de la matriz de entrada,
+        zona resultado de texto y zona de resultado de matriz
+        """
         self.matrix_frame = customtkinter.CTkFrame(
             self, border_width=2, border_color="gray")
         self.matrix_frame.grid(row=1, rowspan=4, column=0,
@@ -120,6 +127,9 @@ class App(customtkinter.CTk):
         self.eliminate()
 
     def configure_midbar(self):
+        """
+        configura la pestaña intermedia de operaciones a matrices
+        """
         midbar_frame = customtkinter.CTkFrame(self, width=120, fg_color=None)
         midbar_frame.grid(row=1, rowspan=4, column=1, sticky="ns")
 
@@ -143,6 +153,9 @@ class App(customtkinter.CTk):
                     f"Error: El archivo {img_name} no se encontró en la carpeta 'images'.")
 
     def configure_topbar(self):
+        """
+        configura la pestaña superior de herramientas
+        """
         topbar_frame = customtkinter.CTkFrame(
             self, height=100, corner_radius=0)
         topbar_frame.grid(row=0, column=0, columnspan=3,
@@ -173,6 +186,10 @@ class App(customtkinter.CTk):
             row=0, column=8, padx=10, pady=10, sticky="e")
 
     def setup_scrollbars(self):
+        """
+        configura sobre la zona de resultado de la matriz, un canva que permite
+        un area de trabajo mas amplia con posibilidad de consulta con scrollbar
+        """
         bg_co = "white"
 
         self.results_canvas = tk.Canvas(
@@ -195,24 +212,38 @@ class App(customtkinter.CTk):
             "<Configure>", lambda e: self.update_canvas_window(e, window_id))
 
     def update_canvas_window(self, event, window_id):
+        """
+        función que actualiza las propiedades de la scrollbar en ejecución
+        """
         canvas_width = max(self.results_scroll.winfo_reqwidth(), event.width)
         self.results_canvas.itemconfig(window_id, width=canvas_width)
         self.results_canvas.configure(
             scrollregion=self.results_canvas.bbox("all"))
 
     def toggle_theme(self):
+        """
+        cambia el tema de la interfaz
+        """
         if customtkinter.get_appearance_mode() == "Dark":
             customtkinter.set_appearance_mode("Light")
+            
         else:
             customtkinter.set_appearance_mode("Dark")
             
 ####################_____________esqueleto_fin______________#########################
-
+    #### NO USAR 
     def toolbar_button_click(self, action):
+        """
+        función relleno para puerbas
+        """
         print(f"{action} button clicked")
 
     # cambiar tamaño de matriz:
     def matrix_size(self):
+        """
+        gestiona una ventana emergente que permite el elegir una ventana 
+        
+        """
         self.matrix_window = customtkinter.CTkToplevel(self)
         self.matrix_window.title("Adjust Matrix Size")
         self.matrix_window.geometry("800x600")
@@ -249,6 +280,9 @@ class App(customtkinter.CTk):
         self.canvas.bind("<B1-Motion>", self.resize_matrix)
 
     def draw_matrix(self):
+        """
+        dibuja la matriz en redimensionar la matriz
+        """
         self.canvas.delete("all")
 
         self.canvas.update_idletasks()
@@ -301,6 +335,9 @@ class App(customtkinter.CTk):
         )
 
     def resize_matrix(self, event):
+        """
+        funciona para redimensionar la matriz en la ventana emergente de redimensionar matriz
+        """
         start_x = (self.canvas.winfo_width() - self.columns *
                    (self.cell_size + self.cell_padding)) // 2
         start_y = (self.canvas.winfo_height() - self.rows *
@@ -322,6 +359,9 @@ class App(customtkinter.CTk):
             self.draw_matrix()
 
     def create_rounded_rectangle(self, x1, y1, x2, y2, type_e, radius=25, **kwargs):
+        """
+        crea un rectagulo de arrastre rojo de la ventana emergente
+        """
         points = [x1+radius, y1,
                   x1+radius, y1, x2-radius, y1, x2-radius, y1, x2, y1,
                   x2, y1, x2, y1+radius, x2, y1+radius, x2, y2-radius,
@@ -331,18 +371,27 @@ class App(customtkinter.CTk):
         return type_e.create_polygon(points, **kwargs, smooth=True)
 
     def update_rows_columns(self, event=None):
+        """
+        crea mas columnas o filas en la ventana emergente de redimensionar matriz
+        """
         self.rows = int(self.row_box.get())
         self.columns = int(self.col_box.get())
         self.draw_matrix()
         self.create_matrix_entries(self.rows, self.columns)
 
     def accept_size(self):
+        """
+        funcionalidad del boton de aceptar tamaño de matriz
+        """
         rows = int(self.row_box.get())
         columns = int(self.col_box.get())
         self.create_matrix_entries(rows, columns)
         self.matrix_window.destroy()
 
     def create_matrix_entries(self, rows, columns):
+        """
+        dibuja la matriz una vez se importa o se redimensiona la matriz
+        """
         for widget in self.matrix_frame.winfo_children():
             widget.destroy()
 
@@ -394,6 +443,9 @@ class App(customtkinter.CTk):
             self.matrix_entries.append(row_entries)
 
     def draw_brackets(self, canvas, start_x, start_y, total_width, total_height, bracket_width, bracket_depth, bracket_color):
+        """
+        dibuja los corchetes de las matrices
+        """
         canvas.create_line(start_x - bracket_width, start_y,
                            start_x, start_y, width=2, fill=bracket_color)
         canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width, start_y + total_height, width=2,
@@ -409,6 +461,9 @@ class App(customtkinter.CTk):
                            start_y + total_height, width=2, fill=bracket_color)
 
     def calculate_determinant(self):
+        """
+        función que calcula el determinante
+        """
         for widget in self.results_scroll.winfo_children():
             widget.destroy()
 
@@ -468,6 +523,9 @@ class App(customtkinter.CTk):
         label.grid(sticky="nsew", padx=20, pady=20)
 
     def gauss_jordan(self):
+        """
+        función que culcula el sistemas de ecuaciones por gauss-jordan
+        """
         rows = len(self.matrix_entries)
         columns = len(self.matrix_entries[0])
 
@@ -536,6 +594,9 @@ class App(customtkinter.CTk):
 
     def calculate_inverse(self):
 
+        """
+        función que culcula la inversa
+        """
         for widget in self.result_frame.winfo_children():
             widget.destroy()
 
@@ -593,6 +654,9 @@ class App(customtkinter.CTk):
         self.display_result_matrix(inverse_matrix)
 
     def display_result_matrix(self, matrix):
+        """
+        función que se encarga de mostrar la matriz de resultado
+        """
         for widget in self.results_scroll.winfo_children():
             widget.destroy()
 
@@ -629,6 +693,9 @@ class App(customtkinter.CTk):
             scrollregion=self.results_canvas.bbox("all"))
 
     def display_solution(self, matrix):
+        """
+        función que se encarga de mostrar el texto de solución
+        """
         for widget in self.result_frame.winfo_children():
             widget.destroy()
 
@@ -713,14 +780,23 @@ class App(customtkinter.CTk):
         label.grid(sticky="nsew", padx=20, pady=20)
 
     def import_document(self):
+        """
+        función que importa matrices
+        """
         TKdnd.import_document(self, "<GJ>")
         self.matrix_frame.update_idletasks()
 
     def export_document(self):
+        """
+        función que exporta la matriz
+        """
         TKdnd.export_document(self)
         self.matrix_frame.update_idletasks()
 
     def eliminate(self):
+        """
+        función que elimina todas la entradas
+        """
         for widget in self.matrix_frame.winfo_children():
             widget.destroy()
 
@@ -742,6 +818,9 @@ class App(customtkinter.CTk):
         label.place(x=50, y=50)
 
     def run(self):
+        """
+        función de arranque de la aplicación
+        """
         self.mainloop()
 
 
