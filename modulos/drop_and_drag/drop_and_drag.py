@@ -15,6 +15,7 @@ from fractions import Fraction
 
 #libreria para manejar archivos
 import os
+import traceback
 
 #libreria para manejar imagenes
 from PIL import ImageTk, Image
@@ -189,6 +190,8 @@ def import_explore(secondary_window, root: customtkinter.CTkToplevel) -> None:
     file_name = filedialog.askopenfilename(
         parent=root, filetypes=[("Text files", "*.txt")])
     # Abrir una ventana del explorador de archivos para que el usuario seleccione un archivo
+    file_name = os.path.normpath(file_name)
+    print(file_name)
     if file_name:  # Verifica si se seleccionó un archivo
         try:
             with open(file_name, 'r') as file:  # Abre el archivo en modo lectura
@@ -231,6 +234,7 @@ def import_explore(secondary_window, root: customtkinter.CTkToplevel) -> None:
             # Muestra un mensaje de error genérico si ocurre cualquier otra excepción
             tkinter.messagebox.showerror(
                 "Error", f"No se pudo abrir el archivo: {e}")
+            traceback.print_exc()
     else:
         # Muestra un mensaje de error si no se seleccionó un archivo o si el archivo no es un archivo de texto
         tkinter.messagebox.showerror(

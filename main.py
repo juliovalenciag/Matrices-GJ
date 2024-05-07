@@ -72,6 +72,8 @@ class App(customtkinter.CTk):
     # - create_matrix_entries(self, rows, columns) -> None
     # - display_result_matrix(self, matrix) -> None
     # - display_solution(self, matrix) -> None
+    
+    # inicio
     # - run(self) -> None
 
 
@@ -464,11 +466,13 @@ class App(customtkinter.CTk):
         """
         función que calcula el determinante
         """
-        for widget in self.results_scroll.winfo_children():
-            widget.destroy()
+        if self.results_scroll.winfo_exists():
+            for widget in self.results_scroll.winfo_children():
+                widget.destroy()
 
-        for widget in self.result_frame.winfo_children():
-            widget.destroy()
+        if self.result_frame.winfo_exists():
+            for widget in self.result_frame.winfo_children():
+                widget.destroy()
 
         if not self.matrix_entries:
             tkinter.messagebox.showinfo(
@@ -657,7 +661,7 @@ class App(customtkinter.CTk):
         """
         función que se encarga de mostrar la matriz de resultado
         """
-        for widget in self.results_scroll.winfo_children():
+        for widget in self.results_canvas.winfo_children():
             widget.destroy()
 
         rows = len(matrix)
@@ -697,11 +701,6 @@ class App(customtkinter.CTk):
         función que se encarga de mostrar el texto de solución
         """
         for widget in self.result_frame.winfo_children():
-            widget.destroy()
-
-        for widget in self.results_scroll.winfo_children():
-            widget.destroy()
-        for widget in self.results_canvas.winfo_children():
             widget.destroy()
 
         rows = len(matrix)
@@ -797,14 +796,22 @@ class App(customtkinter.CTk):
         """
         función que elimina todas la entradas
         """
-        for widget in self.matrix_frame.winfo_children():
-            widget.destroy()
+        if self.matrix_frame.winfo_exists():
+            for widget in self.matrix_frame.winfo_children():
+                widget.destroy()
 
-        for widget in self.results_scroll.winfo_children():
-            widget.destroy()
+        if self.results_scroll.winfo_exists():
+            for widget in self.results_scroll.winfo_children():
+                widget.destroy()
 
-        for widget in self.result_frame.winfo_children():
-            widget.destroy()
+        if self.result_frame.winfo_exists():
+            for widget in self.result_frame.winfo_children():
+                widget.destroy()
+                
+        if self.results_canvas.winfo_exists():
+            for widget in self.results_canvas.winfo_children():
+                widget.destroy()
+            self.results_canvas.delete("all")
 
         if customtkinter.get_appearance_mode() == "Dark":
             fg_co = "black"
