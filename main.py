@@ -28,7 +28,7 @@ import modulos.drop_and_drag.drop_and_drag as TKdnd
 from modulos.verificador_variables.verificador import verificador_de_variables
 
 # define los temas de la interfaz grafica
-customtkinter.set_appearance_mode("Dark")  # Configura el tema oscuro
+customtkinter.set_appearance_mode("White")  # Configura el tema oscuro
 customtkinter.set_default_color_theme(
     "dark-blue")  # Configura el tema de color
 
@@ -72,8 +72,6 @@ class App(customtkinter.CTk):
     # - create_matrix_entries(self, rows, columns) -> None
     # - display_result_matrix(self, matrix) -> None
     # - display_solution(self, matrix) -> None
-    
-    # inicio
     # - run(self) -> None
 
 
@@ -182,10 +180,10 @@ class App(customtkinter.CTk):
                 print(
                     f"Error: El archivo {img_name} no se encontró en la carpeta 'images'.")
 
-        self.appearance_switch = customtkinter.CTkSwitch(
-            topbar_frame, text="Cambiar tema", command=self.toggle_theme, font=('Arial', 24))
-        self.appearance_switch.grid(
-            row=0, column=8, padx=10, pady=10, sticky="e")
+        ##self.appearance_switch = customtkinter.CTkSwitch(
+           ## topbar_frame, text="Cambiar tema", command=self.toggle_theme, font=('Arial', 24))
+        ##self.appearance_switch.grid(
+           ## row=0, column=8, padx=10, pady=10, sticky="e")
 
     def setup_scrollbars(self):
         """
@@ -221,7 +219,7 @@ class App(customtkinter.CTk):
         self.results_canvas.itemconfig(window_id, width=canvas_width)
         self.results_canvas.configure(
             scrollregion=self.results_canvas.bbox("all"))
-
+''' quitamos la funcion para cambiar tema
     def toggle_theme(self):
         """
         cambia el tema de la interfaz
@@ -231,6 +229,8 @@ class App(customtkinter.CTk):
             
         else:
             customtkinter.set_appearance_mode("Dark")
+'''
+
             
 ####################_____________esqueleto_fin______________#########################
     #### NO USAR 
@@ -466,13 +466,11 @@ class App(customtkinter.CTk):
         """
         función que calcula el determinante
         """
-        if self.results_scroll.winfo_exists():
-            for widget in self.results_scroll.winfo_children():
-                widget.destroy()
+        for widget in self.results_scroll.winfo_children():
+            widget.destroy()
 
-        if self.result_frame.winfo_exists():
-            for widget in self.result_frame.winfo_children():
-                widget.destroy()
+        for widget in self.result_frame.winfo_children():
+            widget.destroy()
 
         if not self.matrix_entries:
             tkinter.messagebox.showinfo(
@@ -523,7 +521,7 @@ class App(customtkinter.CTk):
                     matrix[j][k] -= factor * matrix[i][k]
 
         label = customtkinter.CTkLabel(
-            self.result_frame, text=f"Determinante: {determinant}", anchor="w", justify=tk.LEFT, font=('Arial', 20), text_color="white")
+            self.result_frame, text=f"Determinante: {determinant}", anchor="w", justify=tk.LEFT, font=('Arial', 20), text_color="black")
         label.grid(sticky="nsew", padx=20, pady=20)
 
     def gauss_jordan(self):
@@ -661,7 +659,7 @@ class App(customtkinter.CTk):
         """
         función que se encarga de mostrar la matriz de resultado
         """
-        for widget in self.results_canvas.winfo_children():
+        for widget in self.results_scroll.winfo_children():
             widget.destroy()
 
         rows = len(matrix)
@@ -672,9 +670,20 @@ class App(customtkinter.CTk):
         bracket_width = 20
         bracket_depth = 10
 
-        bg_color_constant = "#60656b" if customtkinter.get_appearance_mode(
-        ) == "Dark" else "lightgrey"
-        bg_color_default = "#2C2F33" if customtkinter.get_appearance_mode() == "Dark" else "white"
+        is_square = (rows == columns)
+        constant_term_column = columns - 1 if not is_square else None
+
+        if customtkinter.get_appearance_mode() == "Dark":
+            bg_color_default = "#2C2F33"
+            bg_color_constant = "#60656b" if not is_square else bg_color_default
+            bracket_color = "white"
+            canvas_bg = "#202020"
+        else:
+            bg_color_default = "white"
+            bg_color_constant = "lightgrey" if not is_square else bg_color_default
+            bracket_color = "black"
+            canvas_bg = "#e3e3e3"
+
         start_x = bracket_width + padding
         start_y = padding
         total_width = columns * (entry_width + padding)
@@ -685,7 +694,7 @@ class App(customtkinter.CTk):
         for i in range(rows):
             for j in range(columns):
                 value = matrix[i][j]
-                bg_color = bg_color_constant if j == columns - 1 else bg_color_default
+                bg_color = bg_color_constant if j== constant_term_column else bg_color_default
                 label = customtkinter.CTkLabel(self.results_canvas, text=f'{Fraction(value)}',
                                                width=entry_width, height=entry_height,
                                                corner_radius=5, fg_color=bg_color, anchor='center', font=('Arial', 24))
@@ -701,6 +710,11 @@ class App(customtkinter.CTk):
         función que se encarga de mostrar el texto de solución
         """
         for widget in self.result_frame.winfo_children():
+         #   widget.destroy()
+
+        for widget in self.results_scroll.winfo_children():
+            widget.destroy()
+        #for widget in self.results_canvas.winfo_children():
             widget.destroy()
 
         rows = len(matrix)
@@ -807,7 +821,7 @@ class App(customtkinter.CTk):
         if self.result_frame.winfo_exists():
             for widget in self.result_frame.winfo_children():
                 widget.destroy()
-                
+
         if self.results_canvas.winfo_exists():
             for widget in self.results_canvas.winfo_children():
                 widget.destroy()
