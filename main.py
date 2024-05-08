@@ -187,8 +187,8 @@ class App(customtkinter.CTk):
 
     def setup_scrollbars(self):
         """
-        configura sobre la zona de resultado de la matriz, un canva que permite
-        un area de trabajo mas amplia con posibilidad de consulta con scrollbar
+        Configura sobre la zona de resultado de la matriz, un canvas que permite
+        un área de trabajo más amplia con posibilidad de consulta con scrollbar
         """
         bg_co = "#e3e3e3"
 
@@ -205,18 +205,17 @@ class App(customtkinter.CTk):
         self.h_scroll.pack(side="bottom", fill="x")
         self.results_canvas.pack(side="left", fill="both", expand=True)
 
+        # Crear un marco desplazable dentro del canvas
         self.results_scroll = tk.Frame(self.results_canvas)
-        window_id = self.results_canvas.create_window(
+        self.results_scroll_id = self.results_canvas.create_window(
             (0, 0), window=self.results_scroll, anchor='nw')
-        self.results_scroll.bind(
-            "<Configure>", lambda e: self.update_canvas_window(e, window_id))
 
-    def update_canvas_window(self, event, window_id):
+        self.results_scroll.bind("<Configure>", self.update_canvas_window)
+
+    def update_canvas_window(self, event):
         """
-        función que actualiza las propiedades de la scrollbar en ejecución
+        Función que actualiza las propiedades del scrollbar en ejecución
         """
-        canvas_width = max(self.results_scroll.winfo_reqwidth(), event.width)
-        self.results_canvas.itemconfig(window_id, width=canvas_width)
         self.results_canvas.configure(
             scrollregion=self.results_canvas.bbox("all"))
 
@@ -260,13 +259,13 @@ class App(customtkinter.CTk):
         self.cell_padding = 10
 
         self.row_box = ttk.Combobox(self.matrix_window, values=list(
-            range(1, 7)), state="readonly", width=10)
+            range(1, 10)), state="readonly", width=10)
         self.row_box.set(self.rows)
         self.row_box.pack(side='left', padx=20, pady=20)
         self.row_box.bind("<<ComboboxSelected>>", self.update_rows_columns)
 
         self.col_box = ttk.Combobox(self.matrix_window, values=list(
-            range(1, 7)), state="readonly", width=10, height=60)
+            range(1, 10)), state="readonly", width=10, height=60)
         self.col_box.set(self.columns)
         self.col_box.pack(side='left', padx=20, pady=20)
         self.col_box.bind("<<ComboboxSelected>>", self.update_rows_columns)
@@ -442,10 +441,12 @@ class App(customtkinter.CTk):
                 row_entries.append(entry)
             self.matrix_entries.append(row_entries)
 
-    def draw_brackets(self, canvas, start_x, start_y, total_width, total_height, bracket_width, bracket_depth, bracket_color):
+    def draw_brackets(self, canvas, start_x, start_y, total_width, total_height, bracket_width, bracket_depth,
+                      bracket_color):
         """
-        dibuja los corchetes de las matrices
+        Dibuja los corchetes de las matrices
         """
+        # Corchete izquierdo
         canvas.create_line(start_x - bracket_width, start_y,
                            start_x, start_y, width=2, fill=bracket_color)
         canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width, start_y + total_height, width=2,
@@ -453,6 +454,7 @@ class App(customtkinter.CTk):
         canvas.create_line(start_x - bracket_width, start_y + total_height, start_x, start_y + total_height, width=2,
                            fill=bracket_color)
 
+        # Corchete derecho
         canvas.create_line(start_x + total_width, start_y, start_x + total_width + bracket_width, start_y, width=2,
                            fill=bracket_color)
         canvas.create_line(start_x + total_width + bracket_width, start_y, start_x + total_width + bracket_width,
@@ -669,9 +671,9 @@ class App(customtkinter.CTk):
 
         rows = len(matrix)
         columns = max(len(row) for row in matrix) if matrix else 0
-        entry_width = max(60, 600 // max(columns, 10))
+        entry_width = max(80, 800 // max(columns, 10))
         entry_height = max(60, 300 // max(rows, 10))
-        padding = 5
+        padding = 15
         bracket_width = 20
         bracket_depth = 10
 
@@ -693,6 +695,7 @@ class App(customtkinter.CTk):
         start_y = padding
         total_width = columns * (entry_width + padding)
         total_height = rows * (entry_height + padding)
+
         self.draw_brackets(self.results_canvas, start_x, start_y, total_width, total_height, bracket_width, bracket_depth,
                            "black")
 
