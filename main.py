@@ -674,6 +674,7 @@ class App(customtkinter.CTk):
         padding = 5
         bracket_width = 20
         bracket_depth = 10
+        self.matrix_result = matrix
 
         is_square = (rows == columns)
         constant_term_column = columns - 1 if not is_square else None
