@@ -162,6 +162,39 @@ def export_document(secondary_window) -> None:
             with open(filepath, 'w') as file:
                 for fila in secondary_window.matrix_entries:  # Itera sobre cada fila en la matriz de entradas
                     for entry in fila:  # Itera sobre cada entrada en la fila actual
+                        valor = entry  # Obtiene el valor de la entrada actual
+                        if valor:  # Verifica si hay un valor en la entrada
+                            # Escribe el valor seguido de un espacio en el archivo
+                            file.write(str(Fraction(valor)) + " ")
+                        else:
+                            # Escribe "0.0" seguido de un espacio si no hay valor en la entrada
+                            file.write("0")
+                # Agrega un salto de línea al final de cada fila en el archivo
+                    file.write("\n")
+
+        # Muestra un mensaje de éxito después de exportar la matriz
+            tkinter.messagebox.showinfo(
+                "Éxito", "La matriz ha sido exportada exitosamente.")
+        except Exception as e:
+            # Manejar cualquier error que pueda ocurrir al escribir en el archivo
+            # Muestra un mensaje de error si no se puede exportar la matriz
+            tkinter.messagebox.showerror(
+                "Error", f"No se pudo exportar la matriz: {e}")
+            
+
+def export_document_result(secondary_window) -> None:
+    """
+    Exporta la matriz de entradas en la interfaz gráfica a un archivo de texto (.txt).
+    """
+    # Abrir una ventana del explorador de archivos para que el usuario seleccione la ubicación y el nombre del archivo
+    filepath = filedialog.asksaveasfilename(defaultextension=".txt")
+
+    if filepath:  # Verifica si se seleccionó un archivo para guardar
+        try:
+            # Abrir el archivo en modo escritura y escribir los datos de la matriz en él
+            with open(filepath, 'w') as file:
+                for fila in secondary_window.matrix_result:  # Itera sobre cada fila en la matriz de entradas
+                    for entry in fila:  # Itera sobre cada entrada en la fila actual
                         valor = entry.get()  # Obtiene el valor de la entrada actual
                         if valor:  # Verifica si hay un valor en la entrada
                             # Escribe el valor seguido de un espacio en el archivo

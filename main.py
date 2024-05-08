@@ -676,6 +676,7 @@ class App(customtkinter.CTk):
         padding = 15
         bracket_width = 20
         bracket_depth = 10
+        self.matrix_result = matrix
 
         is_square = (rows == columns)
         constant_term_column = columns - 1 if not is_square else None
@@ -813,6 +814,13 @@ class App(customtkinter.CTk):
         función que exporta la matriz
         """
         TKdnd.export_document(self)
+        self.matrix_frame.update_idletasks()
+        
+    def export_document_result(self):
+        """
+        función que exporta_result la matriz
+        """
+        TKdnd.export_document_result(self)
         self.matrix_frame.update_idletasks()
 
     def eliminate(self):
