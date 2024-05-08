@@ -811,6 +811,13 @@ class App(customtkinter.CTk):
         """
         TKdnd.export_document(self)
         self.matrix_frame.update_idletasks()
+        
+    def export_document_result(self):
+        """
+        función que exporta_result la matriz
+        """
+        TKdnd.export_document_result(self)
+        self.matrix_frame.update_idletasks()
 
     def eliminate(self):
         """
