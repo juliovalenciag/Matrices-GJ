@@ -28,7 +28,7 @@ import modulos.drop_and_drag.drop_and_drag as TKdnd
 from modulos.verificador_variables.verificador import verificador_de_variables
 
 # define los temas de la interfaz grafica
-customtkinter.set_appearance_mode("White")  # Configura el tema oscuro
+customtkinter.set_appearance_mode("Light")  # Configura el tema oscuro
 customtkinter.set_default_color_theme(
     "dark-blue")  # Configura el tema de color
 
@@ -61,7 +61,7 @@ class App(customtkinter.CTk):
     # - calculate_determinant(self) -> None
     # - gauss_jordan(self) -> None
     # - calculate_inverse(self) -> None
-    
+
         funciones para el dibujo de las matrices
     # - matrix_size(self) -> None
     # - draw_matrix(self) -> None
@@ -77,7 +77,7 @@ class App(customtkinter.CTk):
 
     """
 
-####################_____________esqueleto_inicio______________#########################
+#################### _____________esqueleto_inicio______________#########################
     def __init__(self):
         super().__init__()
 
@@ -145,7 +145,7 @@ class App(customtkinter.CTk):
                 pil_image = Image.open(image_path).resize((50, 50))
                 tk_image = ImageTk.PhotoImage(pil_image)
                 button = customtkinter.CTkButton(midbar_frame, image=tk_image, text=text, command=cmd,
-                                                 compound="top",fg_color="#0D87BF", hover_color="gray", font=('Arial', 24))
+                                                 compound="top", fg_color="#0D87BF", hover_color="gray", font=('Arial', 24))
                 button.image = tk_image
                 button.grid(row=i, column=0, padx=10, pady=10)
             except FileNotFoundError:
@@ -180,17 +180,17 @@ class App(customtkinter.CTk):
                 print(
                     f"Error: El archivo {img_name} no se encontró en la carpeta 'images'.")
 
-        ##self.appearance_switch = customtkinter.CTkSwitch(
-           ## topbar_frame, text="Cambiar tema", command=self.toggle_theme, font=('Arial', 24))
-        ##self.appearance_switch.grid(
-           ## row=0, column=8, padx=10, pady=10, sticky="e")
+        # self.appearance_switch = customtkinter.CTkSwitch(
+           # topbar_frame, text="Cambiar tema", command=self.toggle_theme, font=('Arial', 24))
+        # self.appearance_switch.grid(
+           # row=0, column=8, padx=10, pady=10, sticky="e")
 
     def setup_scrollbars(self):
         """
         configura sobre la zona de resultado de la matriz, un canva que permite
         un area de trabajo mas amplia con posibilidad de consulta con scrollbar
         """
-        bg_co = "white"
+        bg_co = "#e3e3e3"
 
         self.results_canvas = tk.Canvas(
             self.solution_frame, highlightthickness=0, bg=bg_co)
@@ -219,21 +219,18 @@ class App(customtkinter.CTk):
         self.results_canvas.itemconfig(window_id, width=canvas_width)
         self.results_canvas.configure(
             scrollregion=self.results_canvas.bbox("all"))
-''' quitamos la funcion para cambiar tema
+
+
     def toggle_theme(self):
         """
         cambia el tema de la interfaz
         """
         if customtkinter.get_appearance_mode() == "Dark":
-            customtkinter.set_appearance_mode("Light")
-            
+           customtkinter.set_appearance_mode("Light")
+
         else:
             customtkinter.set_appearance_mode("Dark")
-'''
 
-            
-####################_____________esqueleto_fin______________#########################
-    #### NO USAR 
     def toolbar_button_click(self, action):
         """
         función relleno para puerbas
@@ -244,8 +241,9 @@ class App(customtkinter.CTk):
     def matrix_size(self):
         """
         gestiona una ventana emergente que permite el elegir una ventana 
-        
+
         """
+        self.eliminate()
         self.matrix_window = customtkinter.CTkToplevel(self)
         self.matrix_window.title("Adjust Matrix Size")
         self.matrix_window.geometry("800x600")
@@ -315,7 +313,7 @@ class App(customtkinter.CTk):
         self.canvas.create_line(start_x + total_width + bracket_width, start_y, start_x + total_width + bracket_width,
                                 start_y + total_height, width=2, fill=bracket_color)
 
-        bracket_tab_length = 10
+        bracket_tab_length = 20
         self.canvas.create_line(start_x - bracket_width, start_y, start_x - bracket_width + bracket_tab_length,
                                 start_y, width=2, fill=bracket_color)
         self.canvas.create_line(start_x - bracket_width, start_y + total_height, start_x - bracket_width + bracket_tab_length,
@@ -466,17 +464,19 @@ class App(customtkinter.CTk):
         """
         función que calcula el determinante
         """
-        for widget in self.results_scroll.winfo_children():
-            widget.destroy()
+        if self.results_scroll.winfo_exists():
+            for widget in self.results_scroll.winfo_children():
+                widget.destroy()
 
-        for widget in self.result_frame.winfo_children():
-            widget.destroy()
+        if self.result_frame.winfo_exists():
+            for widget in self.result_frame.winfo_children():
+                widget.destroy()
 
         if customtkinter.get_appearance_mode() == "Dark":
             color_te = "white"
         else:
             color_te = "black"
-            
+
         if not self.matrix_entries:
             tkinter.messagebox.showinfo(
                 "Información", "Primero ingresa la matriz.")
@@ -600,7 +600,6 @@ class App(customtkinter.CTk):
             self.display_solution(matrix)
 
     def calculate_inverse(self):
-
         """
         función que culcula la inversa
         """
@@ -664,8 +663,9 @@ class App(customtkinter.CTk):
         """
         función que se encarga de mostrar la matriz de resultado
         """
-        for widget in self.results_scroll.winfo_children():
-            widget.destroy()
+        if self.results_scroll.winfo_exists():
+            for widget in self.results_scroll.winfo_children():
+                widget.destroy()
 
         rows = len(matrix)
         columns = max(len(row) for row in matrix) if matrix else 0
@@ -699,7 +699,7 @@ class App(customtkinter.CTk):
         for i in range(rows):
             for j in range(columns):
                 value = matrix[i][j]
-                bg_color = bg_color_constant if j== constant_term_column else bg_color_default
+                bg_color = bg_color_constant if j == constant_term_column else bg_color_default
                 label = customtkinter.CTkLabel(self.results_canvas, text=f'{Fraction(value)}',
                                                width=entry_width, height=entry_height,
                                                corner_radius=5, fg_color=bg_color, anchor='center', font=('Arial', 24))
@@ -715,12 +715,12 @@ class App(customtkinter.CTk):
         función que se encarga de mostrar el texto de solución
         """
         for widget in self.result_frame.winfo_children():
-         #   widget.destroy()
+            widget.destroy()
 
-        for widget in self.results_scroll.winfo_children():
-            widget.destroy()
+        #for widget in self.results_scroll.winfo_children():
+        #   widget.destroy()
         #for widget in self.results_canvas.winfo_children():
-            widget.destroy()
+        #   widget.destroy()
 
         rows = len(matrix)
         columns = len(matrix[0])
@@ -801,6 +801,7 @@ class App(customtkinter.CTk):
         """
         función que importa matrices
         """
+        self.eliminate()
         TKdnd.import_document(self, "<GJ>")
         self.matrix_frame.update_idletasks()
 
@@ -833,15 +834,15 @@ class App(customtkinter.CTk):
             self.results_canvas.delete("all")
 
         if customtkinter.get_appearance_mode() == "Dark":
-            fg_co = "black"
+            fg_co = "#202020"
             text_co = "white"
         else:
-            fg_co = "white"
+            fg_co = "#e3e3e3"
             text_co = "black"
         label = customtkinter.CTkLabel(self.matrix_frame, text="Importa una matriz o selecciona\n un tamaño de matriz",
                                        width=100, height=100,
                                        corner_radius=5, fg_color=fg_co, bg_color=fg_co, anchor='center', font=('Arial', 24), text_color=text_co)
-        label.place(x=50, y=50)
+        label.place(relx=0.5, rely=0.5, anchor='center')
 
     def run(self):
         """
