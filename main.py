@@ -145,7 +145,7 @@ class App(customtkinter.CTk):
                 pil_image = Image.open(image_path).resize((50, 50))
                 tk_image = ImageTk.PhotoImage(pil_image)
                 button = customtkinter.CTkButton(midbar_frame, image=tk_image, text=text, command=cmd,
-                                                 compound="top", fg_color=None, hover_color="gray", font=('Arial', 24))
+                                                 compound="top",fg_color="#0D87BF", hover_color="gray", font=('Arial', 24))
                 button.image = tk_image
                 button.grid(row=i, column=0, padx=10, pady=10)
             except FileNotFoundError:
@@ -173,7 +173,7 @@ class App(customtkinter.CTk):
                 tk_image = ImageTk.PhotoImage(pil_image)
                 button = customtkinter.CTkButton(topbar_frame, image=tk_image, text=text, command=cmd,
                                                  compound="top",
-                                                 fg_color=None, hover_color="gray", font=('Arial', 24))
+                                                 fg_color="#0D87BF", hover_color="gray", font=('Arial', 24))
                 button.image = tk_image
                 button.grid(row=0, column=i, padx=10, pady=10)
             except FileNotFoundError:
@@ -472,6 +472,11 @@ class App(customtkinter.CTk):
         for widget in self.result_frame.winfo_children():
             widget.destroy()
 
+        if customtkinter.get_appearance_mode() == "Dark":
+            color_te = "white"
+        else:
+            color_te = "black"
+            
         if not self.matrix_entries:
             tkinter.messagebox.showinfo(
                 "Información", "Primero ingresa la matriz.")
@@ -521,7 +526,7 @@ class App(customtkinter.CTk):
                     matrix[j][k] -= factor * matrix[i][k]
 
         label = customtkinter.CTkLabel(
-            self.result_frame, text=f"Determinante: {determinant}", anchor="w", justify=tk.LEFT, font=('Arial', 20), text_color="black")
+            self.result_frame, text=f"Determinante: {determinant}", anchor="w", justify=tk.LEFT, font=('Arial', 20), text_color=color_te)
         label.grid(sticky="nsew", padx=20, pady=20)
 
     def gauss_jordan(self):
@@ -701,7 +706,7 @@ class App(customtkinter.CTk):
                 # label.grid(row=i, column=j, padx=5, pady=5, sticky="nsew")
                 label.place(x=start_x + j * (entry_width + padding),
                             y=start_y + i * (entry_height + padding))
-        self.results_scroll.update_idletasks()
+        self.result_frame.update_idletasks()
         self.results_canvas.configure(
             scrollregion=self.results_canvas.bbox("all"))
 
@@ -833,7 +838,7 @@ class App(customtkinter.CTk):
         else:
             fg_co = "white"
             text_co = "black"
-        label = customtkinter.CTkLabel(self.matrix_frame, text="Importa un matriz o selecciona\n un tamaño de matriz",
+        label = customtkinter.CTkLabel(self.matrix_frame, text="Importa una matriz o selecciona\n un tamaño de matriz",
                                        width=100, height=100,
                                        corner_radius=5, fg_color=fg_co, bg_color=fg_co, anchor='center', font=('Arial', 24), text_color=text_co)
         label.place(x=50, y=50)
