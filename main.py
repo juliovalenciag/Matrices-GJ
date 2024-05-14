@@ -89,6 +89,7 @@ class App(customtkinter.CTk):
         self.configure_topbar()
         self.create_main_content()
         self.configure_midbar()
+        self.matrix_result=None
 
     def configure_grid_layout(self):
         """
@@ -164,7 +165,9 @@ class App(customtkinter.CTk):
         button_info = [("importar.png", "Importar", self.import_document),
                        ("Cambiar.png", "Seleccionar tamaño", self.matrix_size),
                        ("exportar.png", "Exportar", self.export_document),
-                       ("limpiar.png", "Reiniciar", self.eliminate)]
+                       ("limpiar.png", "Reiniciar", self.eliminate),
+                       ("exportarSalida.png","Exportar \nresultado",self.export_document_result)
+                       ]
 
         for i, (img_name, text, cmd) in enumerate(button_info):
             try:
