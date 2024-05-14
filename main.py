@@ -190,7 +190,11 @@ class App(customtkinter.CTk):
         Configura sobre la zona de resultado de la matriz, un canvas que permite
         un área de trabajo más amplia con posibilidad de consulta con scrollbar
         """
-        bg_co = "#e3e3e3"
+        bg_co = "#e3e3e3" if customtkinter.get_appearance_mode() == "Light" else "#202020"
+
+        # Elimina cualquier scrollbar existente antes de agregar nuevos
+        for widget in self.solution_frame.winfo_children():
+            widget.destroy()
 
         self.results_canvas = tk.Canvas(
             self.solution_frame, highlightthickness=0, bg=bg_co)
@@ -201,9 +205,13 @@ class App(customtkinter.CTk):
         self.results_canvas.configure(
             yscrollcommand=self.v_scroll.set, xscrollcommand=self.h_scroll.set)
 
-        self.v_scroll.pack(side="right", fill="y")
-        self.h_scroll.pack(side="bottom", fill="x")
-        self.results_canvas.pack(side="left", fill="both", expand=True)
+        self.results_canvas.grid(row=0, column=0, sticky="nsew")
+        self.v_scroll.grid(row=0, column=1, sticky="ns")
+        self.h_scroll.grid(row=1, column=0, sticky="ew")
+
+        # Configura las filas y columnas de la cuadrícula
+        self.solution_frame.grid_rowconfigure(0, weight=1)
+        self.solution_frame.grid_columnconfigure(0, weight=1)
 
         # Crear un marco desplazable dentro del canvas
         self.results_scroll = tk.Frame(self.results_canvas)
@@ -211,6 +219,7 @@ class App(customtkinter.CTk):
             (0, 0), window=self.results_scroll, anchor='nw')
 
         self.results_scroll.bind("<Configure>", self.update_canvas_window)
+        self.results_canvas.bind("<Configure>", self.update_scroll_region)
 
     def update_canvas_window(self, event):
         """
@@ -219,6 +228,12 @@ class App(customtkinter.CTk):
         self.results_canvas.configure(
             scrollregion=self.results_canvas.bbox("all"))
 
+    def update_scroll_region(self, event):
+        """
+        Función que actualiza las propiedades del scrollbar en ejecución
+        """
+        self.results_canvas.configure(
+            scrollregion=self.results_canvas.bbox("all"))
 
     def toggle_theme(self):
         """
@@ -444,7 +459,7 @@ class App(customtkinter.CTk):
     def draw_brackets(self, canvas, start_x, start_y, total_width, total_height, bracket_width, bracket_depth,
                       bracket_color):
         """
-        Dibuja los corchetes de las matrices
+        Dibuja los corchetes de las matrices en el canvas
         """
         # Corchete izquierdo
         canvas.create_line(start_x - bracket_width, start_y,
@@ -663,20 +678,24 @@ class App(customtkinter.CTk):
 
     def display_result_matrix(self, matrix):
         """
-        función que se encarga de mostrar la matriz de resultado
+        Función que se encarga de mostrar la matriz de resultado
         """
-        if self.results_scroll.winfo_exists():
-            for widget in self.results_scroll.winfo_children():
-                widget.destroy()
+        # Verifica que los scrollbars estén configurados
+        if not hasattr(self, 'results_scroll') or not self.results_scroll.winfo_exists():
+            self.setup_scrollbars()
+
+        # Limpia el canvas antes de dibujar
+        self.results_canvas.delete("all")
+        for widget in self.results_scroll.winfo_children():
+            widget.destroy()
 
         rows = len(matrix)
         columns = max(len(row) for row in matrix) if matrix else 0
         entry_width = max(80, 800 // max(columns, 10))
         entry_height = max(60, 300 // max(rows, 10))
-        padding = 15
+        padding = 15  # Ajuste del padding
         bracket_width = 20
         bracket_depth = 10
-        self.matrix_result = matrix
 
         is_square = (rows == columns)
         constant_term_column = columns - 1 if not is_square else None
@@ -692,27 +711,26 @@ class App(customtkinter.CTk):
             bracket_color = "black"
             canvas_bg = "#e3e3e3"
 
-        start_x = bracket_width + padding
+        start_x = bracket_width
         start_y = padding
         total_width = columns * (entry_width + padding)
         total_height = rows * (entry_height + padding)
 
-        self.draw_brackets(self.results_canvas, start_x, start_y, total_width, total_height, bracket_width, bracket_depth,
-                           "black")
+        self.draw_brackets(self.results_canvas, start_x, start_y, total_width, total_height, bracket_width,
+                           bracket_depth, bracket_color)
 
         for i in range(rows):
             for j in range(columns):
                 value = matrix[i][j]
                 bg_color = bg_color_constant if j == constant_term_column else bg_color_default
-                label = customtkinter.CTkLabel(self.results_canvas, text=f'{Fraction(value)}',
-                                               width=entry_width, height=entry_height,
-                                               corner_radius=5, fg_color=bg_color, anchor='center', font=('Arial', 24))
-                # label.grid(row=i, column=j, padx=5, pady=5, sticky="nsew")
-                label.place(x=start_x + j * (entry_width + padding),
-                            y=start_y + i * (entry_height + padding))
-        self.result_frame.update_idletasks()
-        self.results_canvas.configure(
-            scrollregion=self.results_canvas.bbox("all"))
+                entry = customtkinter.CTkEntry(self.results_canvas, width=entry_width, height=entry_height,
+                                               corner_radius=5, fg_color=bg_color, font=('Arial', 24))
+                entry.insert(0, str(Fraction(value)))
+                self.results_canvas.create_window((start_x + 40) + j * (entry_width + padding),
+                                                  (start_y + 30) + i * (entry_height + padding), window=entry)
+
+        self.results_scroll.update_idletasks()
+        self.results_canvas.configure(scrollregion=self.results_canvas.bbox("all"))
 
     def display_solution(self, matrix):
         """
