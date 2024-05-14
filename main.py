@@ -673,7 +673,7 @@ class App(customtkinter.CTk):
         columns = max(len(row) for row in matrix) if matrix else 0
         entry_width = max(80, 800 // max(columns, 10))
         entry_height = max(60, 300 // max(rows, 10))
-        padding = 15
+        padding = 30
         bracket_width = 20
         bracket_depth = 10
         self.matrix_result = matrix
@@ -854,6 +854,7 @@ class App(customtkinter.CTk):
                                        width=100, height=100,
                                        corner_radius=5, fg_color=fg_co, bg_color=fg_co, anchor='center', font=('Arial', 24), text_color=text_co)
         label.place(relx=0.5, rely=0.5, anchor='center')
+        self.matrix_result = None
 
     def run(self):
         """
