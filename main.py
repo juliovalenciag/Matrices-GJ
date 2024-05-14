@@ -694,7 +694,8 @@ class App(customtkinter.CTk):
 
         rows = len(matrix)
         columns = max(len(row) for row in matrix) if matrix else 0
-        entry_width = max(80, 800 // max(columns, 10))
+        entry_width = max(len(max((str(s) for row in matrix for s in row), key=len))*14, 25)
+        #entry_width = max(80, 800 // max(columns, 10))
         entry_height = max(60, 300 // max(rows, 10))
         padding = 15  # Ajuste del padding
         bracket_width = 20
@@ -729,11 +730,15 @@ class App(customtkinter.CTk):
                 entry = customtkinter.CTkEntry(self.results_canvas, width=entry_width, height=entry_height,
                                                corner_radius=5, fg_color=bg_color, font=('Arial', 24))
                 entry.insert(0, str(Fraction(value)))
-                self.results_canvas.create_window((start_x + 40) + j * (entry_width + padding),
+                self.results_canvas.create_window((start_x + 10 + entry_width/2) + j * (entry_width + padding),
                                                   (start_y + 30) + i * (entry_height + padding), window=entry)
+                
+
 
         self.results_scroll.update_idletasks()
         self.results_canvas.configure(scrollregion=self.results_canvas.bbox("all"))
+        self.matrix_result=matrix
+        
 
     def display_solution(self, matrix):
         """

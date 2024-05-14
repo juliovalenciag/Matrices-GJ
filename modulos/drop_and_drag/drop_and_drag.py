@@ -202,7 +202,7 @@ def export_document_result(secondary_window) -> None:
                 with open(filepath, 'w') as file:
                     for fila in secondary_window.matrix_result:  # Itera sobre cada fila en la matriz de entradas
                         for entry in fila:  # Itera sobre cada entrada en la fila actual
-                            valor = entry.get()  # Obtiene el valor de la entrada actual
+                            valor = entry  # Obtiene el valor de la entrada actual
                             if valor:  # Verifica si hay un valor en la entrada
                                 # Escribe el valor seguido de un espacio en el archivo
                                 file.write(str(Fraction(valor)) + " ")
