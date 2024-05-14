@@ -191,7 +191,7 @@ class App(customtkinter.CTk):
         Configura sobre la zona de resultado de la matriz, un canvas que permite
         un área de trabajo más amplia con posibilidad de consulta con scrollbar
         """
-        bg_co = "#e3e3e3" if customtkinter.get_appearance_mode() == "Light" else "#202020"
+        bg_co = "#e3e3e3"
 
         # Elimina cualquier scrollbar existente antes de agregar nuevos
         for widget in self.solution_frame.winfo_children():
@@ -459,7 +459,7 @@ class App(customtkinter.CTk):
     def draw_brackets(self, canvas, start_x, start_y, total_width, total_height, bracket_width, bracket_depth,
                       bracket_color):
         """
-        Dibuja los corchetes de las matrices
+        Dibuja los corchetes de las matrices en el canvas
         """
         # Corchete izquierdo
         canvas.create_line(start_x - bracket_width, start_y,
@@ -693,7 +693,7 @@ class App(customtkinter.CTk):
         columns = max(len(row) for row in matrix) if matrix else 0
         entry_width = max(80, 800 // max(columns, 10))
         entry_height = max(60, 300 // max(rows, 10))
-        padding = 15
+        padding = 10  # Ajuste del padding
         bracket_width = 20
         bracket_depth = 10
 
@@ -711,8 +711,8 @@ class App(customtkinter.CTk):
             bracket_color = "black"
             canvas_bg = "#e3e3e3"
 
-        start_x = bracket_width + padding
-        start_y = padding
+        start_x = bracket_width  # Ajuste de la posición inicial en x
+        start_y = padding  # Ajuste de la posición inicial en y
         total_width = columns * (entry_width + padding)
         total_height = rows * (entry_height + padding)
 
@@ -726,8 +726,8 @@ class App(customtkinter.CTk):
                 entry = customtkinter.CTkEntry(self.results_canvas, width=entry_width, height=entry_height,
                                                corner_radius=5, fg_color=bg_color, font=('Arial', 24))
                 entry.insert(0, str(Fraction(value)))
-                self.results_canvas.create_window(start_x + j * (entry_width + padding),
-                                                  start_y + i * (entry_height + padding), window=entry)
+                self.results_canvas.create_window((start_x + 40) + j * (entry_width + padding ),
+                                                  (start_y + 30) + i * (entry_height + padding), window=entry)
 
         self.results_scroll.update_idletasks()
         self.results_canvas.configure(scrollregion=self.results_canvas.bbox("all"))
