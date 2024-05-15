@@ -89,7 +89,7 @@ class App(customtkinter.CTk):
         self.configure_topbar()
         self.create_main_content()
         self.configure_midbar()
-        self.matrix_result=None
+        self.matrix_result = None
 
     def configure_grid_layout(self):
         """
@@ -166,7 +166,8 @@ class App(customtkinter.CTk):
                        ("Cambiar.png", "Seleccionar tamaño", self.matrix_size),
                        ("exportar.png", "Exportar", self.export_document),
                        ("limpiar.png", "Reiniciar", self.eliminate),
-                       ("exportarSalida.png","Exportar \nresultado",self.export_document_result)
+                       ("exportarSalida.png", "Exportar \nresultado",
+                        self.export_document_result)
                        ]
 
         for i, (img_name, text, cmd) in enumerate(button_info):
@@ -243,7 +244,7 @@ class App(customtkinter.CTk):
         cambia el tema de la interfaz
         """
         if customtkinter.get_appearance_mode() == "Dark":
-           customtkinter.set_appearance_mode("Light")
+            customtkinter.set_appearance_mode("Light")
 
         else:
             customtkinter.set_appearance_mode("Dark")
@@ -510,22 +511,32 @@ class App(customtkinter.CTk):
             return
 
         matrix = []
+
+        if size > 6:
+            try:
+                for row_entries in self.matrix_entries:
+                    row = [float(Fraction(entry.get() if entry.get() else '0'))
+                           for entry in row_entries]
+                    matrix.append(row)
+
+                matrix = np.array(matrix, dtype=np.float64)
+                determinant = np.linalg.det(matrix)
+                label = customtkinter.CTkLabel(
+                    self.result_frame, text=f"Determinante: {determinant}", anchor="w", justify=tk.LEFT, font=('Arial', 20), text_color=color_te)
+                label.grid(sticky="nsew", padx=20, pady=20)
+                return
+
+            except np.linalg.LinAlgError:
+                tkinter.messagebox.showerror(
+                    "Error", "Algo salio mal y sepa que fue.")
+                return
+
         for row_entries in self.matrix_entries:
             row = [Fraction(entry.get() if entry.get() else '0')
                    for entry in row_entries]
             matrix.append(row)
 
         determinant = 1
-
-        if size > 6:
-            try:
-                determinant = np.linalg.det(matrix)
-                return
-            except np.linalg.LinAlgError:
-                tkinter.messagebox.showerror(
-                    "Error", "Algo salio mal y sepa que fue.")
-                return
-
         for i in range(size):
             if matrix[i][i] == 0:  # Buscar un pivot no cero en la columna i
                 for k in range(i + 1, size):
@@ -558,28 +569,30 @@ class App(customtkinter.CTk):
 
         matrix = []
 
-        if rows > 6 or columns > 6:
+        # if rows > 5 or columns > 5:
 
-            try:
-                for row_entries in self.matrix_entries:
-                    row = []
-                    for entry in row_entries:
-                        entry_value = entry.get()
-                        if entry_value:
-                            row.append(Fraction(entry_value))
-                        else:
-                            row.append(Fraction(0))
-                    matrix.append(row)
-                matrix = np.array(matrix)
-                matrix = np.around(matrix, 5)
-                matrix = matrix.astype(float)
-                matrix = np.linalg.solve(matrix[:, :-1], matrix[:, -1])
-                self.display_result_matrix(matrix)
-                self.display_solution(matrix)
-                return
-            except np.linalg.LinAlgError:
-                tkinter.messagebox.showerror("Error",)
-                return
+        #     try:
+        #         for row_entries in self.matrix_entries:
+        #             row = []
+        #             for entry in row_entries:
+        #                 entry_value = entry.get()
+        #                 if entry_value:
+        #                     row.append(float(Fraction(entry_value)))
+        #                 else:
+        #                     row.append(0.0)
+        #             matrix.append(row)
+
+        #         matrix = np.array(matrix, dtype=np.float64)
+        #         matrix = np.around(matrix, 5)
+        #         matrix = matrix.astype(float)
+        #         matrix = np.linalg.solve(matrix[:, :-1], matrix[:, -1])
+        #         self.display_result_matrix(matrix)
+        #         self.display_solution(matrix)
+        #         return
+        #     except np.linalg.LinAlgError:
+        #         tkinter.messagebox.showerror(
+        #             "Error", "No se puede resolver el sistema de ecuaciones.")
+        #         return
 
         for row_entries in self.matrix_entries:
             row = []
@@ -634,7 +647,16 @@ class App(customtkinter.CTk):
             return
 
         matrix = []
-        if rows > 6:
+        if rows > 5:
+            for row_entries in self.matrix_entries:
+                row = []
+                for entry in row_entries:
+                    entry_value = entry.get()
+                    if entry_value:
+                        row.append(float(entry_value))
+                    else:
+                        row.append(0.0)
+                matrix.append(row)
             inverse_matrix = np.array(matrix)
             try:
                 inverse_matrix = np.linalg.inv(inverse_matrix)
@@ -692,14 +714,38 @@ class App(customtkinter.CTk):
         for widget in self.results_scroll.winfo_children():
             widget.destroy()
 
+        if isinstance(matrix, np.ndarray):
+            new_matrix = []
+            for row in matrix:
+                new_matrix.append([Fraction(x).limit_denominator(100000) for x in row])
+
+            matrix = new_matrix
+            columns = max(len(row) for row in matrix) if np.size(matrix) > 0 else 0
+            
+        else:
+            columns = max(len(row) for row in matrix) if matrix else 0
+            
         rows = len(matrix)
-        columns = max(len(row) for row in matrix) if matrix else 0
-        entry_width = max(len(max((str(s) for row in matrix for s in row), key=len))*14, 25)
-        #entry_width = max(80, 800 // max(columns, 10))
-        entry_height = max(60, 300 // max(rows, 10))
+        print(matrix)
+        entry_width = max(len(max((str(max(int(s.denominator), int(s.numerator)))
+                                   for row in matrix for s in row), key=len))*14, 40)
+        entry_height = max(30, 300 // max(rows, 10))
+        # entry_width = max(80, 800 // max(columns, 10))
         padding = 15  # Ajuste del padding
         bracket_width = 20
         bracket_depth = 10
+        control = False
+        
+        for row in matrix:
+            for s in row:
+                print(s.denominator, s.denominator != 1, '\n')
+        array = [s.denominator == 1 for row in matrix for s in row]
+        print(array)
+        if (array.count(False) != 0):
+            control = True
+            total_height = rows * (entry_height + padding) * 2
+        else:
+            total_height = rows * (entry_height + padding)
 
         is_square = (rows == columns)
         constant_term_column = columns - 1 if not is_square else None
@@ -718,27 +764,54 @@ class App(customtkinter.CTk):
         start_x = bracket_width
         start_y = padding
         total_width = columns * (entry_width + padding)
-        total_height = rows * (entry_height + padding)
-
-        self.draw_brackets(self.results_canvas, start_x, start_y, total_width, total_height, bracket_width,
-                           bracket_depth, bracket_color)
 
         for i in range(rows):
             for j in range(columns):
                 value = matrix[i][j]
                 bg_color = bg_color_constant if j == constant_term_column else bg_color_default
-                entry = customtkinter.CTkEntry(self.results_canvas, width=entry_width, height=entry_height,
-                                               corner_radius=5, fg_color=bg_color, font=('Arial', 24))
-                entry.insert(0, str(Fraction(value)))
-                self.results_canvas.create_window((start_x + 10 + entry_width/2) + j * (entry_width + padding),
-                                                  (start_y + 30) + i * (entry_height + padding), window=entry)
-                
+                # entry = customtkinter.CTkEntry(self.results_canvas, width=entry_width, height=entry_height,
+                #                               corner_radius=5, fg_color=bg_color, font=('Arial', 24), state="disabled")
+                # entry_2 = customtkinter.CTkEntry(self.results_canvas, width=entry_width, height=entry_height,
+                #                               corner_radius=5, fg_color=bg_color, font=('Arial', 24), state="disabled")
+                # entry_2.insert(0, str(Fraction(value).denominator))
+                if control and value.denominator != 1:
+                    entry = customtkinter.CTkLabel(self.results_canvas, width=entry_width, height=entry_height,
+                                                   corner_radius=5, fg_color=bg_color, font=('Arial', 24), justify="center", text="0")
+                    entry_2 = customtkinter.CTkLabel(self.results_canvas, width=entry_width, height=entry_height,
+                                                     corner_radius=5, fg_color=bg_color, font=('Arial', 24), justify="center", text="1")
+                    entry = customtkinter.CTkLabel(self.results_canvas, width=entry_width, height=entry_height,
+                                                   corner_radius=5, fg_color=bg_color, font=('Arial', 24), justify="center", text=str(Fraction(value).numerator))
+                    entry_2 = customtkinter.CTkLabel(self.results_canvas, width=entry_width, height=entry_height,
+                                                     corner_radius=5, fg_color=bg_color, font=('Arial', 24), justify="center", text=str(Fraction(value).denominator))
+                    self.results_canvas.create_window((start_x + 10 + entry_width/2) + j * (entry_width + padding),
+                                                      (start_y + 30) + i * (entry_height + padding)*2, window=entry)
+                    self.results_canvas.create_line((start_x + 10) + j * (entry_width + padding) - 5,
+                                                    (start_y + 30) + i * (entry_height +
+                                                                          padding)*2 + entry_height/2 + 2,
+                                                    (start_x + 10) + j * (entry_width +
+                                                                          padding) + entry_width + 5,
+                                                    (start_y + 30) + i * (entry_height + padding)*2 + entry_height/2 + 2)
+                    self.results_canvas.create_window((start_x + 10 + entry_width/2) + j * (entry_width + padding),
+                                                      (start_y + 30) + i * (entry_height + padding)*2 + entry_height + 5, window=entry_2)
 
+                elif control:
+                    entry = customtkinter.CTkLabel(self.results_canvas, width=entry_width, height=entry_height*2,
+                                                   corner_radius=5, fg_color=bg_color, font=('Arial', 24), justify="center", text=str(value))
+                    self.results_canvas.create_window((start_x + 10 + entry_width/2) + j * (entry_width + padding),
+                                                      (start_y + 30) + i * (entry_height + padding)*2 + entry_height/2, window=entry)
+                else:
+                    entry = customtkinter.CTkLabel(self.results_canvas, width=entry_width, height=entry_height,
+                                                   corner_radius=5, fg_color=bg_color, font=('Arial', 24), justify="center", text=str(value))
+                    self.results_canvas.create_window((start_x + 10 + entry_width/2) + j * (entry_width + padding),
+                                                      (start_y + 30) + i * (entry_height + padding), window=entry)
+
+        self.draw_brackets(self.results_canvas, start_x, start_y, total_width, total_height, bracket_width,
+                           bracket_depth, bracket_color)
 
         self.results_scroll.update_idletasks()
-        self.results_canvas.configure(scrollregion=self.results_canvas.bbox("all"))
-        self.matrix_result=matrix
-        
+        self.results_canvas.configure(
+            scrollregion=self.results_canvas.bbox("all"))
+        self.matrix_result = matrix
 
     def display_solution(self, matrix):
         """
@@ -747,9 +820,9 @@ class App(customtkinter.CTk):
         for widget in self.result_frame.winfo_children():
             widget.destroy()
 
-        #for widget in self.results_scroll.winfo_children():
+        # for widget in self.results_scroll.winfo_children():
         #   widget.destroy()
-        #for widget in self.results_canvas.winfo_children():
+        # for widget in self.results_canvas.winfo_children():
         #   widget.destroy()
 
         rows = len(matrix)
@@ -841,7 +914,7 @@ class App(customtkinter.CTk):
         """
         TKdnd.export_document(self)
         self.matrix_frame.update_idletasks()
-        
+
     def export_document_result(self):
         """
         función que exporta_result la matriz
