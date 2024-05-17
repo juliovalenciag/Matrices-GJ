@@ -580,6 +580,7 @@ class App(customtkinter.CTk):
         """
         función que culcula el sistemas de ecuaciones por gauss-jordan
         """
+        self.matrix_result = None
         rows = len(self.matrix_entries)
         columns = len(self.matrix_entries[0])
 
@@ -652,6 +653,7 @@ class App(customtkinter.CTk):
         """
         función que culcula la inversa
         """
+        self.matrix_result = None
         for widget in self.result_frame.winfo_children():
             widget.destroy()
 
@@ -984,6 +986,7 @@ class App(customtkinter.CTk):
                                        width=100, height=100,
                                        corner_radius=5, fg_color=fg_co, bg_color=fg_co, anchor='center', font=('Arial', 24), text_color=text_co)
         label.place(relx=0.5, rely=0.5, anchor='center')
+        self.matrix_result = None
 
     def run(self):
         """
