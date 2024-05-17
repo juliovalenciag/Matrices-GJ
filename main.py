@@ -583,6 +583,20 @@ class App(customtkinter.CTk):
         self.matrix_result = None
         rows = len(self.matrix_entries)
         columns = len(self.matrix_entries[0])
+        # new_matrix = []
+        
+        # for fila in self.matrix_entries:  # Itera sobre cada fila en la matriz de entradas
+        #     for entry in fila:  # Itera sobre cada entrada en la fila actual
+        #         valor = entry.get()  # Obtiene el valor de la entrada actual
+        #         if valor:  # Verifica si hay un valor en la entrada
+        #             # Escribe el valor seguido de un espacio en el archivo
+        #             print(type(valor))
+        #             new_matrix(str(Fraction(valor)) + " ")
+        #         else:
+        #             # Escribe "0.0" seguido de un espacio si no hay valor en la entrada
+        #             new_matrix("0")
+        # # Agrega un salto de línea al final de cada fila en el archivo
+        #     new_matrix("\n")
 
         matrix = []
 
@@ -656,6 +670,8 @@ class App(customtkinter.CTk):
         self.matrix_result = None
         for widget in self.result_frame.winfo_children():
             widget.destroy()
+        
+        
 
         rows = len(self.matrix_entries)
         columns = len(self.matrix_entries[0])
@@ -860,17 +876,22 @@ class App(customtkinter.CTk):
                 if len(terminos_sin) <= i:
                     terminos_sin.append([])
                 terms = []
+                constants = []
                 for j in range(columns - 1):
                     if matrix[i][j] != 0:
                         coefficient = str(matrix[i][j])
                         if coefficient == "1":
                             terms.append(f"x{self.subscript(j + 1)}")
                             terminos_sin[i].append(f"x{self.subscript(j + 1)}")
+                            constants.append(matrix[i][j])
                             continue
+                        
+                        constants.append(matrix[i][j])
 
-                        terms.append(f"{coefficient}x{self.subscript(j + 1)}")
+                        terms.append(f"{(coefficient if coefficient != 1 else '')}x{self.subscript(j + 1)}")
+                        terminos_sin[i].append(f"x{self.subscript(j + 1)}")
                 constant = matrix[i][-1]
-                equation = terms[0] + " = " + " - ".join(terms[1:]) + (f"{constant}" if len(terms) == 1 else (
+                equation = terms[0] + " = " + " ".join(f"+{oir[1:]}" if constants[i+1] < 0 else f"-{oir[:]}" for i, oir in enumerate(terms[1:])) + (f"{constant}" if len(terms) == 1 else (
                     " + " + str(constant) if constant > 0 else ("" if constant == 0 else str(constant))))
                 solution_texts.append(equation)
 
