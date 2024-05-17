@@ -163,9 +163,10 @@ def export_document(secondary_window) -> None:
                 with open(filepath, 'w') as file:
                     for fila in secondary_window.matrix_entries:  # Itera sobre cada fila en la matriz de entradas
                         for entry in fila:  # Itera sobre cada entrada en la fila actual
-                            valor = entry  # Obtiene el valor de la entrada actual
+                            valor = entry.get()  # Obtiene el valor de la entrada actual
                             if valor:  # Verifica si hay un valor en la entrada
                                 # Escribe el valor seguido de un espacio en el archivo
+                                print(type(valor))
                                 file.write(str(Fraction(valor)) + " ")
                             else:
                                 # Escribe "0.0" seguido de un espacio si no hay valor en la entrada
@@ -186,6 +187,7 @@ def export_document(secondary_window) -> None:
             # Muestra un mensaje de error si no se puede exportar la matriz
             tkinter.messagebox.showerror(
                 "Error", f"No se pudo exportar la matriz: {e}")
+            traceback.print_exc()
             
 
 def export_document_result(secondary_window) -> None:
@@ -208,7 +210,7 @@ def export_document_result(secondary_window) -> None:
                                 file.write(str(Fraction(valor)) + " ")
                             else:
                                 # Escribe "0.0" seguido de un espacio si no hay valor en la entrada
-                                file.write("0")
+                                file.write("0 ")
                     # Agrega un salto de línea al final de cada fila en el archivo
                         file.write("\n")
 

@@ -23,6 +23,8 @@ import tkinter.font as tkfont
 from PIL import ImageTk, Image
 
 # libreria encargada de las matrices
+import matplotlib
+import matplotlib.pyplot
 import numpy as np
 
 # modulos externos
@@ -111,10 +113,22 @@ class App(customtkinter.CTk):
         crea los frame directores de las zonas de la matriz de entrada,
         zona resultado de texto y zona de resultado de matriz
         """
+        image_path = os.path.join("images", "fondo_2.png")
+        pil_image = Image.open(image_path)
+        print(pil_image)
+        #matplotlib.pyplot.imshow(pil_image)
+        #matplotlib.pyplot.show()
         self.matrix_frame = customtkinter.CTkFrame(
             self, border_width=2, border_color="gray")
         self.matrix_frame.grid(row=1, rowspan=4, column=0,
                                sticky="nsew", padx=20, pady=20)
+        pil_image = pil_image.resize((500, 500))
+        tk_image = customtkinter.CTkImage(pil_image)
+        self.bg_image_label = customtkinter.CTkButton(self.matrix_frame, image=tk_image)
+        self.bg_image_label.image = tk_image
+        self.bg_image_label.pack(fill='both', expand=True)
+        self.bg_image_label.lower()
+        
 
         self.solution_frame = customtkinter.CTkFrame(
             self, border_width=2, border_color="gray")
@@ -509,7 +523,7 @@ class App(customtkinter.CTk):
         columns = len(self.matrix_entries[0])
         if size != columns:
             tkinter.messagebox.showerror("Error",
-                                         "La matriz debe ser cuadrada (sin contar la columna de términos constantes) para calcular la inversa.")
+                                         "La matriz debe ser cuadrada (sin contar la columna de términos constantes) para calcular el determinante.")
             return
 
         matrix = []
@@ -928,19 +942,36 @@ class App(customtkinter.CTk):
         """
         if self.matrix_frame.winfo_exists():
             for widget in self.matrix_frame.winfo_children():
-                widget.destroy()
+                if(len(self.matrix_frame.winfo_children()) > 1):
+                    widget.destroy()
+                
+                else:
+                    pass
 
         if self.results_scroll.winfo_exists():
             for widget in self.results_scroll.winfo_children():
-                widget.destroy()
+                if(len(self.matrix_frame.winfo_children()) > 1):
+                    widget.destroy()
+                
+                else:
+                    pass
 
         if self.result_frame.winfo_exists():
             for widget in self.result_frame.winfo_children():
-                widget.destroy()
+                if(len(self.matrix_frame.winfo_children()) > 1):
+                    widget.destroy()
+                
+                else:
+                    pass
 
         if self.results_canvas.winfo_exists():
             for widget in self.results_canvas.winfo_children():
-                widget.destroy()
+                if(len(self.matrix_frame.winfo_children()) > 1):
+                    widget.destroy()
+                
+                else:
+                    pass
+                
             self.results_canvas.delete("all")
 
         if customtkinter.get_appearance_mode() == "Dark":
