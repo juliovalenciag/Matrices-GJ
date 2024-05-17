@@ -972,7 +972,7 @@ class App(customtkinter.CTk):
             fg_co = "#202020"
             text_co = "white"
         else:
-            fg_co = "#ececec"
+            fg_co = "#e3e3e3"
             text_co = "black"
 
         # Mensaje por defecto en matrix_frame
