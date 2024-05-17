@@ -113,35 +113,41 @@ class App(customtkinter.CTk):
         crea los frame directores de las zonas de la matriz de entrada,
         zona resultado de texto y zona de resultado de matriz
         """
-        image_path = os.path.join("images", "fondo_2.png")
-        pil_image = Image.open(image_path)
-        print(pil_image)
-        #matplotlib.pyplot.imshow(pil_image)
-        #matplotlib.pyplot.show()
-        self.matrix_frame = customtkinter.CTkFrame(
-            self, border_width=2, border_color="gray")
-        self.matrix_frame.grid(row=1, rowspan=4, column=0,
-                               sticky="nsew", padx=20, pady=20)
-        pil_image = pil_image.resize((500, 500))
-        tk_image = customtkinter.CTkImage(pil_image)
-        self.bg_image_label = customtkinter.CTkButton(self.matrix_frame, image=tk_image)
-        self.bg_image_label.image = tk_image
-        self.bg_image_label.pack(fill='both', expand=True)
-        self.bg_image_label.lower()
-        
+        self.matrix_frame_container = customtkinter.CTkFrame(self)
+        self.matrix_frame_container.grid(row=1, rowspan=4, column=0, sticky="nsew", padx=20, pady=20)
 
-        self.solution_frame = customtkinter.CTkFrame(
-            self, border_width=2, border_color="gray")
-        self.solution_frame.grid(
-            row=1, rowspan=3, column=2, sticky="nsew", padx=20, pady=(20, 0))
+        # Configurar canvas y scrollbars
+        self.matrix_canvas = tk.Canvas(self.matrix_frame_container, bg="#f0f0f0", highlightthickness=0)
+        self.v_scroll = ttk.Scrollbar(self.matrix_frame_container, orient="vertical", command=self.matrix_canvas.yview)
+        self.h_scroll = ttk.Scrollbar(self.matrix_frame_container, orient="horizontal",
+                                      command=self.matrix_canvas.xview)
+        self.matrix_canvas.configure(yscrollcommand=self.v_scroll.set, xscrollcommand=self.h_scroll.set)
 
-        self.result_frame = customtkinter.CTkFrame(
-            self, border_width=2, border_color="gray")
-        self.result_frame.grid(
-            row=4, column=2, sticky="nsew", padx=20, pady=20)
+        self.matrix_canvas.grid(row=0, column=0, sticky="nsew")
+        self.v_scroll.grid(row=0, column=1, sticky="ns")
+        self.h_scroll.grid(row=1, column=0, sticky="ew")
+
+        self.matrix_frame_container.grid_rowconfigure(0, weight=1)
+        self.matrix_frame_container.grid_columnconfigure(0, weight=1)
+
+        # Crear un frame interno para la matriz dentro del canvas
+        self.matrix_frame = customtkinter.CTkFrame(self.matrix_canvas)
+        self.matrix_window_id = self.matrix_canvas.create_window((0, 0), window=self.matrix_frame, anchor="nw")
+
+        self.solution_frame = customtkinter.CTkFrame(self, border_width=2, border_color="gray")
+        self.solution_frame.grid(row=1, rowspan=3, column=2, sticky="nsew", padx=20, pady=(20, 0))
+
+        self.result_frame = customtkinter.CTkFrame(self, border_width=2, border_color="gray")
+        self.result_frame.grid(row=4, column=2, sticky="nsew", padx=20, pady=20)
 
         self.setup_scrollbars()
         self.eliminate()
+
+        # Actualizar la región de scroll del canvas
+        self.matrix_frame.bind("<Configure>", self.update_matrix_canvas)
+
+    def update_matrix_canvas(self, event):
+        self.matrix_canvas.configure(scrollregion=self.matrix_canvas.bbox("all"))
 
     def configure_midbar(self):
         """
@@ -210,7 +216,7 @@ class App(customtkinter.CTk):
         Configura sobre la zona de resultado de la matriz, un canvas que permite
         un área de trabajo más amplia con posibilidad de consulta con scrollbar
         """
-        bg_co = "#e3e3e3" if customtkinter.get_appearance_mode() == "Light" else "#202020"
+        bg_co = "#ececec" if customtkinter.get_appearance_mode() == "Light" else "#202020"
 
         # Elimina cualquier scrollbar existente antes de agregar nuevos
         for widget in self.solution_frame.winfo_children():
@@ -449,7 +455,7 @@ class App(customtkinter.CTk):
             bg_color_default = "white"
             bg_color_constant = "lightgrey" if not is_square else bg_color_default
             bracket_color = "black"
-            canvas_bg = "#e3e3e3"
+            canvas_bg = "#ececec"
 
         total_width = columns * (entry_width + padding)
         total_height = rows * (entry_height + padding)
@@ -474,6 +480,10 @@ class App(customtkinter.CTk):
                             y=start_y + i * (entry_height + padding))
                 row_entries.append(entry)
             self.matrix_entries.append(row_entries)
+
+        # Actualizar la región de scroll del canvas
+        self.matrix_frame.update_idletasks()
+        self.update_matrix_canvas(None)
 
     def draw_brackets(self, canvas, start_x, start_y, total_width, total_height, bracket_width, bracket_depth,
                       bracket_color):
@@ -776,7 +786,7 @@ class App(customtkinter.CTk):
             bg_color_default = "white"
             bg_color_constant = "lightgrey" if not is_square else bg_color_default
             bracket_color = "black"
-            canvas_bg = "#e3e3e3"
+            canvas_bg = "#ececec"
 
         start_x = bracket_width
         start_y = padding
@@ -962,24 +972,22 @@ class App(customtkinter.CTk):
             fg_co = "#202020"
             text_co = "white"
         else:
-            fg_co = "#e3e3e3"
+            fg_co = "#ececec"
             text_co = "black"
 
         # Mensaje por defecto en matrix_frame
-        label = customtkinter.CTkLabel(
+        message_label = customtkinter.CTkLabel(
             self.matrix_frame,
             text="Importa una matriz o selecciona\n un tamaño de matriz",
-            width=100,
-            height=100,
             corner_radius=5,
             fg_color=fg_co,
-            bg_color=fg_co,
+            text_color=text_co,
             anchor='center',
-            font=('Arial', 24),
-            text_color=text_co
+            font=('Arial', 24)
         )
-        label.place(relx=0.5, rely=0.5, anchor='center')
+        message_label.pack(fill='both', expand=True, padx=20, pady=20)
         self.matrix_result = None
+        self.update_matrix_canvas(None)
 
     def run(self):
         """
