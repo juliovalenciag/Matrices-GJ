@@ -16,6 +16,8 @@ import tkinter as tk
 import tkinter.messagebox
 import customtkinter
 from tkinter import ttk
+import tkinter.font as tkfont
+
 
 # libreria encargada de las imagenes
 from PIL import ImageTk, Image
@@ -166,7 +168,7 @@ class App(customtkinter.CTk):
                        ("Cambiar.png", "Seleccionar tamaño", self.matrix_size),
                        ("exportar.png", "Exportar", self.export_document),
                        ("limpiar.png", "Reiniciar", self.eliminate),
-                       ("exportarSalida.png", "Exportar \nresultado",
+                       ("exportarSalida.png", "Exportar resultado",
                         self.export_document_result)
                        ]
 
@@ -820,57 +822,53 @@ class App(customtkinter.CTk):
         for widget in self.result_frame.winfo_children():
             widget.destroy()
 
-        # for widget in self.results_scroll.winfo_children():
-        #   widget.destroy()
-        # for widget in self.results_canvas.winfo_children():
-        #   widget.destroy()
-
         rows = len(matrix)
         columns = len(matrix[0])
         solution_texts = []
-        error_messege = ""
+        error_message = ""
 
         rank = sum(1 for i in range(rows) if any(
             matrix[i][j] != 0 for j in range(columns - 1)))
         if rank < rows:
-            error_messege = "El sistema tiene infinitas soluciones debido a las filas cero.\n"
+            error_message = "El sistema tiene infinitas soluciones debido a las filas cero.\n"
 
         terminos_sin = []
         for i in range(rows):
             if all(matrix[i][j] == 0 for j in range(columns - 1)):
                 if matrix[i][-1] != 0:
-                    error_messege = "Sistema inconsistente. No hay solución.\n"
+                    error_message = "Sistema inconsistente. No hay solución.\n"
                     break
                 else:
                     continue
             else:
-                terminos_sin.append([])
+                if len(terminos_sin) <= i:
+                    terminos_sin.append([])
                 terms = []
                 for j in range(columns - 1):
                     if matrix[i][j] != 0:
                         coefficient = str(matrix[i][j])
                         if coefficient == "1":
-                            terms.append(f"x_{j + 1}")
-                            terminos_sin[i].append(f"x_{j + 1}")
+                            terms.append(f"x{self.subscript(j + 1)}")
+                            terminos_sin[i].append(f"x{self.subscript(j + 1)}")
                             continue
 
-                        terms.append(f"{coefficient}x_{j + 1}")
+                        terms.append(f"{coefficient}x{self.subscript(j + 1)}")
                 constant = matrix[i][-1]
                 equation = terms[0] + " = " + " - ".join(terms[1:]) + (f"{constant}" if len(terms) == 1 else (
                     " + " + str(constant) if constant > 0 else ("" if constant == 0 else str(constant))))
                 solution_texts.append(equation)
 
-        if error_messege == "Sistema inconsistente. No hay solución.\n":
-            print(error_messege)
+        if error_message == "Sistema inconsistente. No hay solución.\n":
+            print(error_message)
             self.matrix_frame.update_idletasks()
             label = customtkinter.CTkLabel(
-                self.result_frame, text=error_messege, anchor="w", justify=tk.LEFT, font=('Arial', 20))
-            label.grid(sticky="nsew", padx=20, pady=20)
+                self.result_frame, text=error_message, anchor="w", justify=tk.LEFT, font=('Arial', 20))
+            label.grid(sticky="nsew", padx=10, pady=10)
             return
 
         soluciones_infinitas, variables = verificador_de_variables(
             terminos_sin)
-        solution_text = error_messege
+        solution_text = error_message
         variables.sort()
         solution_text += "{ " + "( " + ",".join(variables) + " ) |" + "\n"
         solution_text += "\n".join(solution_texts)
@@ -879,26 +877,28 @@ class App(customtkinter.CTk):
             solution_text = "El sistema tiene infinitas soluciones (sistema indeterminado)."
 
         if soluciones_infinitas:
-            # solution_text += "\n Con las variables: " + ", ".join(soluciones_infinitas) + u' \u2208 ' + u'\u211d'
-            # solution_text += "\n Con las variables: " + ", ".join(soluciones_infinitas) + " ∈ R"
             if len(soluciones_infinitas) == 1:
                 solution_text += "\n & " + soluciones_infinitas[0] + " }"
             elif len(soluciones_infinitas) == 2:
                 solution_text += ",\n" + \
-                    soluciones_infinitas[0] + " & " + \
-                    soluciones_infinitas[1] + " }"
+                                 soluciones_infinitas[0] + " & " + \
+                                 soluciones_infinitas[1] + " }"
             else:
                 solution_text += ",\n" + \
-                    ", ".join(soluciones_infinitas[0:-2]) + \
-                    "&" + soluciones_infinitas[-1] + " }"
+                                 ", ".join(soluciones_infinitas[0:-2]) + \
+                                 "&" + soluciones_infinitas[-1] + " }"
         else:
-            solution_text += " }"
+            solution_text += " }\n"
 
         print(solution_text)
         self.matrix_frame.update_idletasks()
         label = customtkinter.CTkLabel(
             self.result_frame, text=solution_text, anchor="w", justify=tk.LEFT, font=('Arial', 20))
         label.grid(sticky="nsew", padx=20, pady=20)
+
+    def subscript(self, n):
+        subscript_map = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
+        return str(n).translate(subscript_map)
 
     def import_document(self):
         """
