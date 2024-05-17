@@ -280,12 +280,11 @@ class App(customtkinter.CTk):
         self.eliminate()
         self.matrix_window = customtkinter.CTkToplevel(self)
         self.matrix_window.title("Adjust Matrix Size")
-        self.matrix_window.geometry("800x600")
+        self.matrix_window.geometry("1200x800")
         self.matrix_window.attributes("-topmost", True)
 
         bg_color = "#191919" if customtkinter.get_appearance_mode() == "Dark" else "white"
-        self.canvas = tk.Canvas(
-            self.matrix_window, bg=bg_color, width=500, height=400)
+        self.canvas = tk.Canvas(self.matrix_window, bg=bg_color, width=800, height=650)
         self.canvas.pack(pady=20, padx=20)
 
         self.rows = 3
