@@ -939,40 +939,23 @@ class App(customtkinter.CTk):
 
     def eliminate(self):
         """
-        función que elimina todas la entradas
+        Función que elimina todas las entradas y limpia todos los frames
         """
-        if self.matrix_frame.winfo_exists():
-            for widget in self.matrix_frame.winfo_children():
-                if(len(self.matrix_frame.winfo_children()) > 1):
-                    widget.destroy()
-                
-                else:
-                    pass
+        # Limpiar matrix_frame
+        for widget in self.matrix_frame.winfo_children():
+            widget.destroy()
 
-        if self.results_scroll.winfo_exists():
+        # Limpiar results_scroll
+        if hasattr(self, 'results_scroll'):
             for widget in self.results_scroll.winfo_children():
-                if(len(self.matrix_frame.winfo_children()) > 1):
-                    widget.destroy()
-                
-                else:
-                    pass
+                widget.destroy()
 
-        if self.result_frame.winfo_exists():
-            for widget in self.result_frame.winfo_children():
-                if(len(self.matrix_frame.winfo_children()) > 1):
-                    widget.destroy()
-                
-                else:
-                    pass
+        # Limpiar result_frame
+        for widget in self.result_frame.winfo_children():
+            widget.destroy()
 
-        if self.results_canvas.winfo_exists():
-            for widget in self.results_canvas.winfo_children():
-                if(len(self.matrix_frame.winfo_children()) > 1):
-                    widget.destroy()
-                
-                else:
-                    pass
-                
+        # Limpiar results_canvas
+        if hasattr(self, 'results_canvas'):
             self.results_canvas.delete("all")
 
         if customtkinter.get_appearance_mode() == "Dark":
@@ -981,9 +964,20 @@ class App(customtkinter.CTk):
         else:
             fg_co = "#e3e3e3"
             text_co = "black"
-        label = customtkinter.CTkLabel(self.matrix_frame, text="Importa una matriz o selecciona\n un tamaño de matriz",
-                                       width=100, height=100,
-                                       corner_radius=5, fg_color=fg_co, bg_color=fg_co, anchor='center', font=('Arial', 24), text_color=text_co)
+
+        # Mensaje por defecto en matrix_frame
+        label = customtkinter.CTkLabel(
+            self.matrix_frame,
+            text="Importa una matriz o selecciona\n un tamaño de matriz",
+            width=100,
+            height=100,
+            corner_radius=5,
+            fg_color=fg_co,
+            bg_color=fg_co,
+            anchor='center',
+            font=('Arial', 24),
+            text_color=text_co
+        )
         label.place(relx=0.5, rely=0.5, anchor='center')
         self.matrix_result = None
 
